@@ -1,0 +1,6 @@
+.idea
+dist
+helm-assistant
+*.tgz
+node_modules
+.helm
