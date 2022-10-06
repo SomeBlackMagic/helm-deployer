@@ -40,18 +40,12 @@ export class UpgradeModule {
                 })();
             }, 5000));
         }
-        if (ConfigFactory.getCore().HELM_ASSISTANT_UPGRADE_JOB_STRICT === true && inArray(cliArgs, '--wait-for-jobs') )  {
+        if (ConfigFactory.getCore().HELM_ASSISTANT_UPGRADE_JOB_STRICT === true && inArray(cliArgs, '--wait-for-jobs')) {
             this.timeouts.push(setTimeout(() => {
                 (async () => {
                     await this.watchJobStatus();
                 })();
             }, 3000));
-
-            this.timeouts.push(setTimeout(() => {
-                (async () => {
-                    await this.kubectlWatchPodsLogsAndEvents();
-                })();
-            }, 5000));
         }
 
     }
@@ -111,11 +105,13 @@ export class UpgradeModule {
                 let podList: any = JSON.parse(pods);
                 podList.items.forEach((podItem: any) => {
                     this.kubectlWatchPodEvents(podItem.metadata.name);
-                    podItem.status.initContainerStatuses.forEach((initContainer) => {
-                        if (initContainer.state.running !== undefined) {
-                            this.kubectlWatchPodContainerLogs(podItem.metadata.name, initContainer.name);
-                        }
-                    });
+                    if (podItem.status.initContainerStatuses !== undefined) {
+                        podItem.status.initContainerStatuses.forEach((initContainer) => {
+                            if (initContainer.state.running !== undefined) {
+                                this.kubectlWatchPodContainerLogs(podItem.metadata.name, initContainer.name);
+                            }
+                        });
+                    }
                     podItem.status.containerStatuses.forEach((container) => {
                         if (container.state.running !== undefined) {
                             this.kubectlWatchPodContainerLogs(podItem.metadata.name, container.name);
@@ -139,7 +135,7 @@ export class UpgradeModule {
                 '--namespace',
                 ConfigFactory.getCore().KUBE_NAMESPACE,
             ];
-        this.createChildProcess(ConfigFactory.getCore().KUBECTL_BIN_PATH, newProcessArgs, false, false, true, 'pod ' + podName + ' events');
+        await this.createChildProcess(ConfigFactory.getCore().KUBECTL_BIN_PATH, newProcessArgs, false, false, true, 'pod ' + podName + ' events');
     }
 
     private async kubectlWatchPodContainerLogs(podName: string, containerName: string) {
