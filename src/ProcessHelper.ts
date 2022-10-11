@@ -29,16 +29,19 @@ export class ProcessHelper {
 
 
     public uncaughtExceptionHandler(error: Error) {
-        console.error(error.message, error.stack, error.name);
-        process.exit(99);
+        //console.error(error.message, error.stack, error.name);
+        process.emit('SIGTERM');
+        // process.exit(99);
+        // throw error;
 
     }
 
     public uncaughtRejectionHandler(reason: {} | null | undefined, promise: Promise<any>) {
         if (typeof reason !== 'undefined') {
-            console.error(reason.toString());
+            console.error(reason['message']);
+            console.error(reason['stack']);
         }
-        process.exit(99);
+        process.emit('SIGTERM');
 
     }
 

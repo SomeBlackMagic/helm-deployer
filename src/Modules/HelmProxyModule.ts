@@ -6,7 +6,7 @@ export class HelmProxyModule {
 
     public async runHelmCMD(cmd: string, cliArgs: string[]): Promise<any> {
         return new Promise<any>((resolve, reject) => {
-            this.process = spawn(cmd, cliArgs);
+            this.process = spawn(cmd, cliArgs.filter((item) => { return item !== ''; }));
 
             this.process.stdout.on('data', (arrayBuffer) => {
                 const data = Buffer.from(arrayBuffer, 'utf-8').toString().split('\n');
@@ -33,7 +33,10 @@ export class HelmProxyModule {
                     resolve();
                     this.process = null;
                 } else {
-                    reject(new Error('Helm command failed. Exit code:' + code));
+                    this.process = null;
+                    process.exitCode = code;
+                    console.log('Helm command failed. Exit code:' + code);
+                    reject();
                 }
             });
         });
@@ -46,7 +49,7 @@ export class HelmProxyModule {
         return new Promise((resolve, reject) => {
             setTimeout(() => {
                 this.process.kill('SIGKILL');
-            }, 10000);
+            }, 5000);
             this.process.kill('SIGINT');
             this.process.on('exit', (code: number) => {
                 resolve();

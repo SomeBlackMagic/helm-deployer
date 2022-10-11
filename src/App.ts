@@ -4,20 +4,19 @@ import {UpgradeModule} from './Modules/UpgradeModule';
 import {ProcessHelper} from './ProcessHelper';
 import {ConfigFactory} from './Config/app-config';
 import {HelmProxyModule} from './Modules/HelmProxyModule';
+import {VersionModule} from './Modules/VersionModule';
 
-processSignalDebug('general', process);
+processSignalDebug('process:->', process);
 const processHelper = new ProcessHelper();
 const upgradeModule = new UpgradeModule();
-const helmProxy = new HelmProxyModule();
+const helmProxyModule = new HelmProxyModule();
+const versionModule = new VersionModule();
 
 
 processHelper.setExitHandler((data: { code: string }) => {
-    console.log('PCNTL signal received. Graceful stop all modules.', [data.code]);
     (async () => {
-        await Promise.all([
-            upgradeModule,
-            helmProxy
-        ].map((item: any) => {
+        console.log('PCNTL signal received. Graceful stop all modules.', [data.code]);
+        await Promise.all([upgradeModule, helmProxyModule].map((item: any) => {
             return item.stop();
         })).catch((error) => {
             console.log('Can not stop services', error);
@@ -41,22 +40,20 @@ processHelper.subscribeOnProcessExit();
         HELM_CMD_ARGS += ' --dry-run';
     }
 
-    // if(HELM_CMD === 'false') {
-    //     throw Error('Variable HELM is not set')
-    // }
-    // if(KUBECTL_CMD === 'false') {
-    //     throw Error('Variable KUBECTL is not set')
-    // }
-
     const processArgs = process.argv.slice(2);
     processArgs.forEach((item: string) => {
-        if (item === 'upgrade' || item === 'list') {
-            upgradeModule.run(processArgs);
+        switch (item) {
+            case 'upgrade':
+                upgradeModule.run(processArgs);
+                break;
+            case 'version':
+                versionModule.run(processArgs);
+                break;
         }
     });
 
 
-    await helmProxy.runHelmCMD(ConfigFactory.getCore().HELM_BIN_PATH, [
+    await helmProxyModule.runHelmCMD(ConfigFactory.getCore().HELM_BIN_PATH, [
         ...HELM_CMD_ARGS.split(' '),
         ...processArgs
     ]);

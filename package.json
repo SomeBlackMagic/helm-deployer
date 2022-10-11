@@ -1,7 +1,7 @@
 {
   "name": "helm-assistant",
   "scripts": {
-    "build": "tsc && pkg --compress GZip dist/App.js -o helm-assistant && chmod +x helm-assistant",
+    "build": "tsc && sh .github/set_version.sh && pkg --compress GZip dist/App.js -o helm-assistant && chmod +x helm-assistant",
     "lint": "tslint -c tslint.json \"./src/**/*.ts\"",
     "lint-fix": "tslint --fix -c tslint.json \"./src/**/*.ts\""
   },

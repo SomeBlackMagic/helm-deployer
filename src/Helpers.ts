@@ -55,7 +55,9 @@ export function envBoolean(key: string, defaultValue: boolean): boolean {
 export function processSignalDebug(name: string, stream: ChildProcessWithoutNullStreams | NodeJS.Process) {
     if (ConfigFactory.getCore().HELM_ASSISTANT_DEBUG === true) {
         if ('spawnargs' in stream) {
-            console.log('Debug process:', stream.spawnargs.join(' '));
+            console.log(name + ' ' + stream.spawnargs.join(' '));
+        } else {
+            console.log(name + ' ' + stream.argv.join(' '));
         }
     }
 

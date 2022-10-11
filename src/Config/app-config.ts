@@ -5,7 +5,7 @@ export class ConfigFactory {
     public static getBase(): AppInfo {
         return {
             id: 'helm-assistant',
-            version: env('APP_VERSION'),
+            version: 'dev-dirty',
         };
     }
 
@@ -21,7 +21,7 @@ export class ConfigFactory {
             KUBE_NAMESPACE:  env('KUBE_NAMESPACE', 'default'),
             HELM_ASSISTANT_UPGRADE_PIPE_LOGS: envBoolean('HELM_ASSISTANT_UPGRADE_PIPE_LOGS', false),
             HELM_ASSISTANT_DEBUG: envBoolean('HELM_ASSISTANT_DEBUG', false),
-            HELM_ASSISTANT_UPGRADE_JOB_STRICT: envBoolean('HELM_ASSISTANT_UPGRADE_JOB_STRICT', true),
+            HELM_ASSISTANT_UPGRADE_JOB_STRICT: envBoolean('HELM_ASSISTANT_UPGRADE_JOB_STRICT', false),
         };
     }
 }

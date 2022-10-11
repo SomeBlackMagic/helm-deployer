@@ -11,7 +11,7 @@ export class UpgradeModule {
     private timeouts: NodeJS.Timeout[] = [];
     private intervals: any[] = [];
 
-    public run(cliArgs: string[]) {
+    public async run(cliArgs: string[]) {
         let BreakException = {};
 
         try {
@@ -27,25 +27,13 @@ export class UpgradeModule {
             if (e !== BreakException) throw e;
         }
 
-        if (ConfigFactory.getCore().HELM_ASSISTANT_UPGRADE_PIPE_LOGS === true) {
-            this.timeouts.push(setTimeout(() => {
-                (async () => {
-                    await this.kubectlWatchPods();
-                })();
-            }, 3000));
 
-            this.timeouts.push(setTimeout(() => {
-                (async () => {
-                    await this.kubectlWatchPodsLogsAndEvents();
-                })();
-            }, 5000));
+        if (ConfigFactory.getCore().HELM_ASSISTANT_UPGRADE_PIPE_LOGS === true) {
+            this.kubectlWatchPodsLogsAndEvents();
+            await this.kubectlWatchPods();
         }
         if (ConfigFactory.getCore().HELM_ASSISTANT_UPGRADE_JOB_STRICT === true && inArray(cliArgs, '--wait-for-jobs')) {
-            this.timeouts.push(setTimeout(() => {
-                (async () => {
-                    await this.watchJobStatus();
-                })();
-            }, 3000));
+            await this.watchJobStatus();
         }
 
     }
@@ -78,28 +66,23 @@ export class UpgradeModule {
             'get',
             'pods',
             '--watch',
-            '--namespace',
-            ConfigFactory.getCore().KUBE_NAMESPACE,
-            '--selector',
-            'app.kubernetes.io/instance=' + this.realiseName
+            '--namespace', ConfigFactory.getCore().KUBE_NAMESPACE,
+            '--selector', 'app.kubernetes.io/instance=' + this.realiseName
         ];
         await this.createChildProcess(ConfigFactory.getCore().KUBECTL_BIN_PATH, args, false, false, true, 'pods', 'magenta');
 
     }
 
-    private async kubectlWatchPodsLogsAndEvents() {
+    private kubectlWatchPodsLogsAndEvents() {
         this.intervals.push(setInterval(() => {
             (async () => {
                 let newProcessArgs: string[] = [
                     ...ConfigFactory.getCore().KUBECTL_CMD_ARGS.split(' '),
                     'get',
                     'pods',
-                    '--namespace',
-                    ConfigFactory.getCore().KUBE_NAMESPACE,
-                    '--selector',
-                    'app.kubernetes.io/instance=' + this.realiseName,
-                    '-o',
-                    'json'
+                    '--namespace', ConfigFactory.getCore().KUBE_NAMESPACE,
+                    '--selector', 'app.kubernetes.io/instance=' + this.realiseName,
+                    '-o', 'json'
                 ];
                 const pods = await this.createChildProcess(ConfigFactory.getCore().KUBECTL_BIN_PATH, newProcessArgs, true, true);
                 let podList: any = JSON.parse(pods);
@@ -130,10 +113,8 @@ export class UpgradeModule {
                 'get',
                 'events',
                 '--watch-only',
-                '--field-selector',
-                'involvedObject.name=' + podName,
-                '--namespace',
-                ConfigFactory.getCore().KUBE_NAMESPACE,
+                '--field-selector', 'involvedObject.name=' + podName,
+                '--namespace', ConfigFactory.getCore().KUBE_NAMESPACE,
             ];
         await this.createChildProcess(ConfigFactory.getCore().KUBECTL_BIN_PATH, newProcessArgs, false, false, true, 'pod ' + podName + ' events');
     }
@@ -154,7 +135,33 @@ export class UpgradeModule {
     }
 
     private async watchJobStatus() {
-
+        let newProcessArgs: string[] =
+            [
+                ...ConfigFactory.getCore().KUBECTL_CMD_ARGS.split(' '),
+                'get',
+                'job',
+                this.realiseName,
+                '-o', 'json',
+                '--namespace', ConfigFactory.getCore().KUBE_NAMESPACE,
+            ];
+        this.intervals.push(setInterval(() => {
+            (async () => {
+                const result = await this.createChildProcess(ConfigFactory.getCore().KUBECTL_BIN_PATH, newProcessArgs, true, true);
+                if (result === '') {
+                    return;
+                }
+                const resultJson = JSON.parse(result);
+                if (typeof resultJson.status.conditions !== 'undefined') {
+                    resultJson.status.conditions.forEach((item: any) => {
+                        if (item.type === 'Failed') {
+                            console.log('Job is failed. Exit!');
+                            process.exitCode = 1;
+                            process.emit('SIGTERM');
+                        }
+                    });
+                }
+            })();
+        }, 1000));
     }
 
 
@@ -181,7 +188,7 @@ export class UpgradeModule {
 
         }
         return new Promise<any>((resolve, reject) => {
-            const process = spawn(command, args);
+            const process = spawn(command, args.filter((item) => { return item !== ''; }));
             let stdout: string = '';
             if (pipeLogs === true) {
                 process.stdout.on('data', (arrayBuffer) => {
