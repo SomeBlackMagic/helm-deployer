@@ -17,14 +17,8 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: '16.x'
-
-      - uses: borales/actions-yarn@v3.0.0
-        with:
-          cmd: install
-
-      - uses: borales/actions-yarn@v3.0.0
-        with:
-          cmd: run build
+      - run: yarn
+      - run: yarn run build
 
       - name: Upload binaries to release
         uses: svenstaro/upload-release-action@v2
