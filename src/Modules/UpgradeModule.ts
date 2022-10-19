@@ -48,16 +48,19 @@ export class UpgradeModule {
         let promises = Object.entries(this.subProcesses).map((entry) => {
             const [key, item] = entry;
             return new Promise((resolve, reject) => {
-                setTimeout(() => {
+                const  timer = setTimeout(() => {
+                    console.log('Stop process ' + key + ' timeout. Killing');
                     item.kill('SIGKILL');
-                }, 10000);
-                item.kill('SIGQUIT');
+                }, 5000);
+                // https://github.com/kubernetes/kubectl/blob/652881798563c00c1895ded6ced819030bfaa4d7/pkg/util/interrupt/interrupt.go#L28
+                item.kill('SIGTERM');
                 item.on('exit', (code: number) => {
-                    resolve();
+                    clearTimeout(timer);
+                    resolve(code);
                 });
             });
         });
-        return Promise.all(promises);
+        return await Promise.all(promises);
     }
 
     private async kubectlWatchPods() {
@@ -69,7 +72,7 @@ export class UpgradeModule {
             '--namespace', ConfigFactory.getCore().KUBE_NAMESPACE,
             '--selector', 'app.kubernetes.io/instance=' + this.realiseName
         ];
-        await this.createChildProcess(ConfigFactory.getCore().KUBECTL_BIN_PATH, args, false, false, true, 'pods', 'magenta');
+        await this.createChildProcess(ConfigFactory.getCore().KUBECTL_BIN_PATH, args, false, false, true, 'pods', 'magenta', );
 
     }
 
@@ -116,7 +119,7 @@ export class UpgradeModule {
                 '--field-selector', 'involvedObject.name=' + podName,
                 '--namespace', ConfigFactory.getCore().KUBE_NAMESPACE,
             ];
-        await this.createChildProcess(ConfigFactory.getCore().KUBECTL_BIN_PATH, newProcessArgs, false, false, true, 'pod ' + podName + ' events');
+        await this.createChildProcess(ConfigFactory.getCore().KUBECTL_BIN_PATH, newProcessArgs, false, false, true, 'pod ' + podName + ' events', 'yellow');
     }
 
     private async kubectlWatchPodContainerLogs(podName: string, containerName: string) {

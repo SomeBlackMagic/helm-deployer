@@ -1,5 +1,6 @@
 import {ChildProcessWithoutNullStreams, spawn} from 'child_process';
 import {processSignalDebug} from '../Helpers';
+import {clearTimeout} from 'timers';
 
 export class HelmProxyModule {
     private process: ChildProcessWithoutNullStreams;
@@ -35,7 +36,7 @@ export class HelmProxyModule {
                 } else {
                     this.process = null;
                     process.exitCode = code;
-                    console.log('Helm command failed. Exit code:' + code);
+                    console.log('Helm command failed. Exit code: ' + code);
                     reject();
                 }
             });
@@ -47,11 +48,13 @@ export class HelmProxyModule {
             return Promise.resolve();
         }
         return new Promise((resolve, reject) => {
-            setTimeout(() => {
+            const  timer = setTimeout(() => {
+                console.log('Timeout waiting stop helm. Killing');
                 this.process.kill('SIGKILL');
             }, 5000);
             this.process.kill('SIGINT');
             this.process.on('exit', (code: number) => {
+                clearTimeout(timer);
                 resolve();
             });
         });

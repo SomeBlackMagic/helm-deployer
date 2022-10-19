@@ -1,5 +1,4 @@
-import {env, envBoolean, processSignalDebug} from './Helpers';
-import {spawn} from 'child_process';
+import {processSignalDebug} from './Helpers';
 import {UpgradeModule} from './Modules/UpgradeModule';
 import {ProcessHelper} from './ProcessHelper';
 import {ConfigFactory} from './Config/app-config';
@@ -16,7 +15,7 @@ const versionModule = new VersionModule();
 processHelper.setExitHandler((data: { code: string }) => {
     (async () => {
         console.log('PCNTL signal received. Graceful stop all modules.', [data.code]);
-        await Promise.all([upgradeModule, helmProxyModule].map((item: any) => {
+        let a = await Promise.all([upgradeModule, helmProxyModule].map((item: any) => {
             return item.stop();
         })).catch((error) => {
             console.log('Can not stop services', error);
