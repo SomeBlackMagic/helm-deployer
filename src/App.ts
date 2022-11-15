@@ -1,11 +1,12 @@
-import {processSignalDebug} from './Helpers';
-import {UpgradeModule} from './Modules/UpgradeModule';
-import {ProcessHelper} from './ProcessHelper';
-import {ConfigFactory} from './Config/app-config';
-import {HelmProxyModule} from './Modules/HelmProxyModule';
-import {VersionModule} from './Modules/VersionModule';
+import { loadEnvVariablesFromFile, processSignalDebug } from 'Helpers';
+import {UpgradeModule} from 'Modules/UpgradeModule';
+import {ProcessHelper} from 'ProcessHelper';
+import {ConfigFactory} from 'Config/app-config';
+import {HelmProxyModule} from 'Modules/HelmProxyModule';
+import {VersionModule} from 'Modules/VersionModule';
 
-processSignalDebug('process:->', process);
+loadEnvVariablesFromFile();
+
 const processHelper = new ProcessHelper();
 const upgradeModule = new UpgradeModule();
 const helmProxyModule = new HelmProxyModule();
@@ -15,7 +16,7 @@ const versionModule = new VersionModule();
 processHelper.setExitHandler((data: { code: string }) => {
     (async () => {
         console.log('PCNTL signal received. Graceful stop all modules.', [data.code]);
-        let a = await Promise.all([upgradeModule, helmProxyModule].map((item: any) => {
+        await Promise.all([upgradeModule, helmProxyModule].map((item: any) => {
             return item.stop();
         })).catch((error) => {
             console.log('Can not stop services', error);
@@ -55,7 +56,7 @@ processHelper.subscribeOnProcessExit();
     await helmProxyModule.runHelmCMD(ConfigFactory.getCore().HELM_BIN_PATH, [
         ...HELM_CMD_ARGS.split(' '),
         ...processArgs
-    ]);
+    ])
     processHelper.exitHandler({code: 'exit'});
 
 })();

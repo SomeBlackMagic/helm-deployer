@@ -14,13 +14,13 @@ export class ConfigFactory {
         return {
             HELM_BIN_PATH:  env('HELM_BIN_PATH', 'helm'),
             HELM_CMD_ARGS: env('HELM_CMD_ARGS', ''),
-            KUBECTL_BIN_PATH: env('HELM_BIN_PATH', 'kubectl'),
+            KUBECTL_BIN_PATH: env('KUBECTL_BIN_PATH', 'kubectl'),
             KUBECTL_CMD_ARGS: env('KUBECTL_CMD_ARGS', ''),
             HELM_DEBUG: envBoolean('HELM_DEBUG', false),
             HELM_DRY_RUN:  envBoolean('HELM_DRY_RUN', false),
             KUBE_NAMESPACE:  env('KUBE_NAMESPACE', 'default'),
-            HELM_ASSISTANT_UPGRADE_PIPE_LOGS: envBoolean('HELM_ASSISTANT_UPGRADE_PIPE_LOGS', false),
             HELM_ASSISTANT_DEBUG: envBoolean('HELM_ASSISTANT_DEBUG', false),
+            HELM_ASSISTANT_UPGRADE_PIPE_LOGS: envBoolean('HELM_ASSISTANT_UPGRADE_PIPE_LOGS', false),
             HELM_ASSISTANT_UPGRADE_JOB_STRICT: envBoolean('HELM_ASSISTANT_UPGRADE_JOB_STRICT', false),
         };
     }
@@ -40,7 +40,7 @@ interface CoreConfigInterface {
     HELM_DEBUG: boolean;
     HELM_DRY_RUN: boolean;
     KUBE_NAMESPACE: string;
-    HELM_ASSISTANT_UPGRADE_PIPE_LOGS: boolean;
     HELM_ASSISTANT_DEBUG: boolean;
+    HELM_ASSISTANT_UPGRADE_PIPE_LOGS: boolean;
     HELM_ASSISTANT_UPGRADE_JOB_STRICT: boolean;
 }

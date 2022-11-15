@@ -48,7 +48,7 @@ export class UpgradeModule {
         let promises = Object.entries(this.subProcesses).map((entry) => {
             const [key, item] = entry;
             return new Promise((resolve, reject) => {
-                const  timer = setTimeout(() => {
+                const timer = setTimeout(() => {
                     console.log('Stop process ' + key + ' timeout. Killing');
                     item.kill('SIGKILL');
                 }, 5000);
@@ -72,7 +72,7 @@ export class UpgradeModule {
             '--namespace', ConfigFactory.getCore().KUBE_NAMESPACE,
             '--selector', 'app.kubernetes.io/instance=' + this.realiseName
         ];
-        await this.createChildProcess(ConfigFactory.getCore().KUBECTL_BIN_PATH, args, false, false, true, 'pods', 'magenta', );
+        await this.createChildProcess(ConfigFactory.getCore().KUBECTL_BIN_PATH, args, false, false, true, 'pods', 'magenta');
 
     }
 
@@ -141,8 +141,7 @@ export class UpgradeModule {
         let newProcessArgs: string[] =
             [
                 ...ConfigFactory.getCore().KUBECTL_CMD_ARGS.split(' '),
-                'get',
-                'job',
+                'get', 'job',
                 this.realiseName,
                 '-o', 'json',
                 '--namespace', ConfigFactory.getCore().KUBE_NAMESPACE,
@@ -154,7 +153,7 @@ export class UpgradeModule {
                     return;
                 }
                 const resultJson = JSON.parse(result);
-                if (typeof resultJson.status.conditions !== 'undefined') {
+                if (typeof resultJson?.status?.conditions !== 'undefined') {
                     resultJson.status.conditions.forEach((item: any) => {
                         if (item.type === 'Failed') {
                             console.log('Job is failed. Exit!');
@@ -191,7 +190,9 @@ export class UpgradeModule {
 
         }
         return new Promise<any>((resolve, reject) => {
-            const process = spawn(command, args.filter((item) => { return item !== ''; }));
+            const process = spawn(command, args.filter((item) => {
+                return item !== '';
+            }));
             let stdout: string = '';
             if (pipeLogs === true) {
                 process.stdout.on('data', (arrayBuffer) => {
@@ -230,6 +231,8 @@ export class UpgradeModule {
                     delete this.subProcesses[logPrefix.replace(/\s/g, '-')];
                     if ((code === 0 || code === 1) && wait === true) {
                         resolve(stdout);
+                    } else if (signal === 'SIGINT') {
+                        resolve('{}');
                     } else {
                         reject(new Error('command failed. Code: ' + code));
                     }

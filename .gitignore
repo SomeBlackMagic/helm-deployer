@@ -4,3 +4,4 @@ helm-assistant
 *.tgz
 node_modules
 .helm
+.env.*
