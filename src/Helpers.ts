@@ -5,7 +5,7 @@ import {ChildProcessWithoutNullStreams} from 'child_process';
 import * as Process from 'process';
 import {ConfigFactory} from './Config/app-config';
 
-export function inArray(arr:string[] | number[] = [], val:string|number): boolean {
+export function inArray(arr: string[] | number[] = [], val:string|number): boolean {
     let len = arr.length;
     let i;
 
@@ -43,6 +43,7 @@ export function envBoolean(key: string, defaultValue: boolean): boolean {
     switch (value) {
         case true:
         case 'true':
+        case 'True':
         case '1':
         case 'on':
         case 'yes':
@@ -124,6 +125,39 @@ export function processSignalDebug(name: string, stream: ChildProcessWithoutNull
     stream.stdout.on('resume', () => { console.log(name + ' send => resume'); });
 }
 
-export function pipeStdout() {
+export function loadEnvVariablesFromFile(): void {
+    let currentEnv = env('APP_ENV');
+        if (fs.existsSync(process.cwd() + '/.env.local')) {
+        const env = loadEnvFile(process.cwd() + '/.env.local');
+        if (env === false) {
+            process.exit(1);
+        }
+    }
+    if (currentEnv !== null && currentEnv !== 'local') {
+        if (fs.existsSync(process.cwd() + '/.env.' + currentEnv)) {
+            const env = loadEnvFile(process.cwd() + '/.env.' + currentEnv);
+            if (env === false) {
+                process.exit(1);
+            }
+        }
+    }
+}
+
+function loadEnvFile(path: string): boolean | DotenvParseOutput {
+    try {
+        fs.accessSync(path, fs.constants.R_OK);
+        console.log('Load env vars from file: ' + path);
+        const dotEnv = config({path: path, override: true, debug: process.env.DEBUG === '*'});
+
+        if (dotEnv.error !== undefined) {
+            console.warn('Can not parse .env file in ');
+            console.warn(dotEnv.error);
+            return false;
+        }
+        return dotEnv.parsed;
+    } catch (err) {
+        console.warn(err);
+        return false;
+    }
 
 }

@@ -30,14 +30,14 @@ export class HelmProxyModule {
             processSignalDebug('helm:->', this.process);
 
             this.process.on('exit', (code: number | null, signal: NodeJS.Signals | null) => {
-                if (code === 0) {
+                if (code === 0 || signal === 'SIGINT') {
                     resolve();
                     this.process = null;
                 } else {
                     this.process = null;
                     process.exitCode = code;
                     console.log('Helm command failed. Exit code: ' + code);
-                    reject();
+                    resolve();
                 }
             });
         });
@@ -48,13 +48,17 @@ export class HelmProxyModule {
             return Promise.resolve();
         }
         return new Promise((resolve, reject) => {
+            const interval = setInterval(() => {
+                this.process.kill('SIGINT');
+            }, 1000);
             const  timer = setTimeout(() => {
                 console.log('Timeout waiting stop helm. Killing');
                 this.process.kill('SIGKILL');
-            }, 5000);
-            this.process.kill('SIGINT');
+                clearInterval(interval);
+            }, 10000);
             this.process.on('exit', (code: number) => {
                 clearTimeout(timer);
+                clearInterval(interval);
                 resolve();
             });
         });
