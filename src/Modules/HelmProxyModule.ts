@@ -1,5 +1,5 @@
 import {ChildProcessWithoutNullStreams, spawn} from 'child_process';
-import {processSignalDebug} from './../Helpers';
+import {processSignalDebug} from '../Helpers';
 import {clearTimeout} from 'timers';
 
 export class HelmProxyModule {
