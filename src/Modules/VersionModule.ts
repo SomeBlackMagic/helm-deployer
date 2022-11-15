@@ -1,4 +1,4 @@
-import {ConfigFactory} from 'Config/app-config';
+import {ConfigFactory} from '../Config/app-config';
 
 const cliColor = require('cli-color');
 

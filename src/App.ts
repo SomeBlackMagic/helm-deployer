@@ -1,9 +1,9 @@
-import { loadEnvVariablesFromFile, processSignalDebug } from 'Helpers';
-import {UpgradeModule} from 'Modules/UpgradeModule';
-import {ProcessHelper} from 'ProcessHelper';
-import {ConfigFactory} from 'Config/app-config';
-import {HelmProxyModule} from 'Modules/HelmProxyModule';
-import {VersionModule} from 'Modules/VersionModule';
+import { loadEnvVariablesFromFile, processSignalDebug } from './Helpers';
+import {UpgradeModule} from './Modules/UpgradeModule';
+import {ProcessHelper} from './ProcessHelper';
+import {ConfigFactory} from './Config/app-config';
+import {HelmProxyModule} from './Modules/HelmProxyModule';
+import {VersionModule} from './Modules/VersionModule';
 
 loadEnvVariablesFromFile();
 

@@ -3,7 +3,7 @@ import {config, DotenvParseOutput} from 'dotenv';
 import * as fs from 'fs';
 import {ChildProcessWithoutNullStreams} from 'child_process';
 import * as Process from 'process';
-import {ConfigFactory} from 'Config/app-config';
+import {ConfigFactory} from './Config/app-config';
 
 export function inArray(arr: string[] | number[] = [], val:string|number): boolean {
     let len = arr.length;
