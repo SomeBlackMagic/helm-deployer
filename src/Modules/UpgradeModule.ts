@@ -13,12 +13,6 @@ export class UpgradeModule {
     private intervals: any[] = [];
 
     public async run(cliArgs: string[]) {
-        const test: string[] | null = null;
-        setTimeout(() => {
-            test.forEach(() => {
-                console.log('!');
-            });
-        }, 3000);
         let BreakException = {};
 
         try {
@@ -96,8 +90,7 @@ export class UpgradeModule {
             (async () => {
                 let newProcessArgs: string[] = [
                     ...ConfigFactory.getCore().KUBECTL_CMD_ARGS.split(' '),
-                    'get',
-                    'pods',
+                    'get', 'pods',
                     '--namespace', ConfigFactory.getCore().KUBE_NAMESPACE,
                     '--selector', 'app.kubernetes.io/instance=' + this.realiseName,
                     '-o', 'json'
@@ -130,8 +123,7 @@ export class UpgradeModule {
         let newProcessArgs: string[] =
             [
                 ...ConfigFactory.getCore().KUBECTL_CMD_ARGS.split(' '),
-                'get',
-                'events',
+                'get', 'events',
                 '--watch-only',
                 '--field-selector', 'involvedObject.name=' + podName,
                 '--namespace', ConfigFactory.getCore().KUBE_NAMESPACE,
@@ -145,10 +137,8 @@ export class UpgradeModule {
                 ...ConfigFactory.getCore().KUBECTL_CMD_ARGS.split(' '),
                 'logs',
                 '--follow',
-                '--namespace',
-                ConfigFactory.getCore().KUBE_NAMESPACE,
-                '--container',
-                containerName,
+                '--namespace', ConfigFactory.getCore().KUBE_NAMESPACE,
+                '--container', containerName,
                 podName
             ];
         await this.createChildProcess(ConfigFactory.getCore().KUBECTL_BIN_PATH, newProcessArgs, false, false, true, 'logs ' + podName + ' [' + containerName + ']', 'blue');

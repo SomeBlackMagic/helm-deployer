@@ -49,9 +49,6 @@ export class HelmProxyModule {
         }
         return new Promise((resolve, reject) => {
             this.process.kill('SIGINT');
-            // const interval = setInterval(() => {
-            //     this.process.kill('SIGINT');
-            // }, 1000);
             const  timer = setTimeout(() => {
                 console.log('Timeout waiting stop helm. Killing');
                 this.process.kill('SIGKILL');
@@ -64,7 +61,6 @@ export class HelmProxyModule {
                 this.process = null;
                 console.log('Helm exit code: ' + code + ' signal ' + signal);
                 clearTimeout(timer);
-                // clearInterval(interval);
                 resolve();
             });
         });

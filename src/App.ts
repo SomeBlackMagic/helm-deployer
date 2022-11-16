@@ -29,7 +29,6 @@ processHelper.setExitHandler((data: { code: string }) => {
 });
 processHelper.subscribeOnProcessExit();
 
-
 (async () => {
 
     let HELM_CMD_ARGS = ConfigFactory.getCore().HELM_CMD_ARGS;
