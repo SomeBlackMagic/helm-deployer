@@ -39,12 +39,14 @@ export class ProcessHelper {
 
     public uncaughtRejectionHandler(reason: {} | null | undefined, promise: Promise<any>) {
         console.error('Helm Assistant: Uncaught Rejection');
+        console.error('-----------------------------------');
         if (typeof reason !== 'undefined') {
             console.error(reason['message']);
             console.error(reason['stack']);
         } else {
             console.log(JSON.stringify(reason));
         }
+        console.error('-----------------------------------');
         process.emit('SIGTERM');
 
     }

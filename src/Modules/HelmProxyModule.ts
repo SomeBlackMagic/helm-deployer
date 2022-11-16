@@ -48,17 +48,19 @@ export class HelmProxyModule {
             return Promise.resolve();
         }
         return new Promise((resolve, reject) => {
-            const interval = setInterval(() => {
-                this.process.kill('SIGINT');
-            }, 1000);
+            this.process.kill('SIGINT');
             const  timer = setTimeout(() => {
                 console.log('Timeout waiting stop helm. Killing');
                 this.process.kill('SIGKILL');
-                clearInterval(interval);
+                // clearInterval(interval);
             }, 10000);
-            this.process.on('exit', (code: number) => {
+            this.process.on('close', (code: number | null, signal: NodeJS.Signals | null) => {
+                console.log('close');
+            });
+            this.process.on('exit', (code: number | null, signal: NodeJS.Signals | null) => {
+                this.process = null;
+                console.log('Helm exit code: ' + code + ' signal ' + signal);
                 clearTimeout(timer);
-                clearInterval(interval);
                 resolve();
             });
         });

@@ -6,6 +6,7 @@ import {clearTimeout} from 'timers';
 const cliColor = require('cli-color');
 
 export class UpgradeModule {
+    private isExit: boolean = false;
     private subProcesses: { [n: string]: ChildProcessWithoutNullStreams } = {};
     private realiseName: string = '';
     private timeouts: NodeJS.Timeout[] = [];
@@ -39,6 +40,7 @@ export class UpgradeModule {
     }
 
     public async stop(): Promise<any> {
+        this.isExit = true;
         this.timeouts.forEach((item) => {
             clearTimeout(item);
         });
@@ -48,13 +50,20 @@ export class UpgradeModule {
         let promises = Object.entries(this.subProcesses).map((entry) => {
             const [key, item] = entry;
             return new Promise((resolve, reject) => {
+                // https://github.com/kubernetes/kubectl/blob/652881798563c00c1895ded6ced819030bfaa4d7/pkg/util/interrupt/interrupt.go#L28
+                item.kill('SIGTERM');
+                const interval = setInterval(() => {
+                    // https://github.com/kubernetes/kubectl/blob/652881798563c00c1895ded6ced819030bfaa4d7/pkg/util/interrupt/interrupt.go#L28
+                    item.kill('SIGTERM');
+                }, 1000);
                 const timer = setTimeout(() => {
+                    clearInterval(interval);
                     console.log('Stop process ' + key + ' timeout. Killing');
                     item.kill('SIGKILL');
                 }, 5000);
-                // https://github.com/kubernetes/kubectl/blob/652881798563c00c1895ded6ced819030bfaa4d7/pkg/util/interrupt/interrupt.go#L28
-                item.kill('SIGTERM');
+
                 item.on('exit', (code: number) => {
+                    clearInterval(interval);
                     clearTimeout(timer);
                     resolve(code);
                 });
@@ -81,8 +90,7 @@ export class UpgradeModule {
             (async () => {
                 let newProcessArgs: string[] = [
                     ...ConfigFactory.getCore().KUBECTL_CMD_ARGS.split(' '),
-                    'get',
-                    'pods',
+                    'get', 'pods',
                     '--namespace', ConfigFactory.getCore().KUBE_NAMESPACE,
                     '--selector', 'app.kubernetes.io/instance=' + this.realiseName,
                     '-o', 'json'
@@ -98,11 +106,13 @@ export class UpgradeModule {
                             }
                         });
                     }
-                    podItem.status.containerStatuses.forEach((container) => {
-                        if (container.state.running !== undefined) {
-                            this.kubectlWatchPodContainerLogs(podItem.metadata.name, container.name);
-                        }
-                    });
+                    if (podItem.status.containerStatuses !== undefined) {
+                        podItem.status.containerStatuses.forEach((container) => {
+                            if (container.state.running !== undefined) {
+                                this.kubectlWatchPodContainerLogs(podItem.metadata.name, container.name);
+                            }
+                        });
+                    }
                 });
             })();
 
@@ -113,8 +123,7 @@ export class UpgradeModule {
         let newProcessArgs: string[] =
             [
                 ...ConfigFactory.getCore().KUBECTL_CMD_ARGS.split(' '),
-                'get',
-                'events',
+                'get', 'events',
                 '--watch-only',
                 '--field-selector', 'involvedObject.name=' + podName,
                 '--namespace', ConfigFactory.getCore().KUBE_NAMESPACE,
@@ -128,10 +137,8 @@ export class UpgradeModule {
                 ...ConfigFactory.getCore().KUBECTL_CMD_ARGS.split(' '),
                 'logs',
                 '--follow',
-                '--namespace',
-                ConfigFactory.getCore().KUBE_NAMESPACE,
-                '--container',
-                containerName,
+                '--namespace', ConfigFactory.getCore().KUBE_NAMESPACE,
+                '--container', containerName,
                 podName
             ];
         await this.createChildProcess(ConfigFactory.getCore().KUBECTL_BIN_PATH, newProcessArgs, false, false, true, 'logs ' + podName + ' [' + containerName + ']', 'blue');
@@ -168,6 +175,10 @@ export class UpgradeModule {
 
 
     private async createChildProcess(command: string, args: string[], wait: boolean = false, grabStdOut: boolean = false, pipeLogs: boolean = false, logPrefix: string = '', logColor: string = 'white') {
+        if (this.isExit === true) {
+            // console.log('Application is in exit process. Skip create new process');
+            return Promise.resolve();
+        }
         if (this.subProcesses[logPrefix.replace(/\s/g, '-')]) {
             return Promise.resolve(true);
         }
