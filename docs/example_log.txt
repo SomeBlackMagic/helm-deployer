@@ -1,0 +1,200 @@
+history.go:56: [debug] getting history for release helm-assistant-demo-deployment
+Release "helm-assistant-demo-deployment" does not exist. Installing it now.
+install.go:192: [debug] Original chart version: ""
+install.go:209: [debug] CHART PATH: /home/wir_wolf/SomeBlackMagic/helm-assistant/test/charts/worker
+client.go:128: [debug] creating 1 resource(s)
+wait.go:48: [debug] beginning wait for 1 resources with timeout of 5m0s
+pods NAME                                              READY   STATUS    RESTARTS   AGE
+pods helm-assistant-demo-deployment-67c8f677db-6fcw6   0/1     Pending   0          0s
+pods helm-assistant-demo-deployment-67c8f677db-6fcw6   0/1     Pending   0          0s
+pods helm-assistant-demo-deployment-67c8f677db-bm4g5   0/1     Pending   0          0s
+pods helm-assistant-demo-deployment-67c8f677db-bm4g5   0/1     Pending   0          0s
+pods helm-assistant-demo-deployment-67c8f677db-bm4g5   0/1     ContainerCreating   0          0s
+pods helm-assistant-demo-deployment-67c8f677db-6fcw6   0/1     ContainerCreating   0          0s
+ready.go:277: [debug] Deployment is not ready: default/helm-assistant-demo-deployment. 0 out of 1 expected pods are ready
+pod helm-assistant-demo-deployment-67c8f677db-bm4g5 events LAST SEEN   TYPE     REASON   OBJECT                                                MESSAGE
+pod helm-assistant-demo-deployment-67c8f677db-bm4g5 events 0s          Normal   Pulled   pod/helm-assistant-demo-deployment-67c8f677db-bm4g5   Successfully pulled image "docker.io/someblackmagic/helm-deployer:tests-image" in 1.272082192s
+pod helm-assistant-demo-deployment-67c8f677db-bm4g5 events 0s          Normal   Created   pod/helm-assistant-demo-deployment-67c8f677db-bm4g5   Created container worker-app
+pod helm-assistant-demo-deployment-67c8f677db-bm4g5 events 0s          Normal   Started   pod/helm-assistant-demo-deployment-67c8f677db-bm4g5   Started container worker-app
+pod helm-assistant-demo-deployment-67c8f677db-6fcw6 events LAST SEEN   TYPE     REASON   OBJECT                                                MESSAGE
+pod helm-assistant-demo-deployment-67c8f677db-6fcw6 events 0s          Normal   Pulled   pod/helm-assistant-demo-deployment-67c8f677db-6fcw6
+pod helm-assistant-demo-deployment-67c8f677db-6fcw6 events Successfully pulled image "docker.io/someblackmagic/helm-deployer:tests-image" in 1.482974503s
+pod helm-assistant-demo-deployment-67c8f677db-6fcw6 events 0s          Normal   Created   pod/helm-assistant-demo-deployment-67c8f677db-6fcw6   Created container worker-app
+pod helm-assistant-demo-deployment-67c8f677db-6fcw6 events 0s          Normal   Started   pod/helm-assistant-demo-deployment-67c8f677db-6fcw6   Started container worker-app
+pod helm-assistant-demo-deployment-67c8f677db-bm4g5 events 0s          Warning   Unhealthy   pod/helm-assistant-demo-deployment-67c8f677db-bm4g5   Readiness probe failed: cat: can't open '/var/lock/ready.lock': No such file or directory
+pods helm-assistant-demo-deployment-67c8f677db-bm4g5   0/1     Running             0          3s
+pods helm-assistant-demo-deployment-67c8f677db-6fcw6   0/1     Running             0          3s
+pod helm-assistant-demo-deployment-67c8f677db-bm4g5 events 0s          Warning   Unhealthy   pod/helm-assistant-demo-deployment-67c8f677db-bm4g5   Readiness probe failed: cat: can't open '/var/lock/ready.lock': No such file or directory
+pod helm-assistant-demo-deployment-67c8f677db-6fcw6 events 0s          Warning   Unhealthy   pod/helm-assistant-demo-deployment-67c8f677db-6fcw6   Readiness probe failed: cat: can't open '/var/lock/ready.lock': No such file or directory
+pod helm-assistant-demo-deployment-67c8f677db-bm4g5 events 0s          Warning   Unhealthy   pod/helm-assistant-demo-deployment-67c8f677db-bm4g5   Readiness probe failed: cat: can't open '/var/lock/ready.lock': No such file or directory
+pod helm-assistant-demo-deployment-67c8f677db-6fcw6 events 0s          Warning   Unhealthy   pod/helm-assistant-demo-deployment-67c8f677db-6fcw6   Readiness probe failed: cat: can't open '/var/lock/ready.lock': No such file or directory
+pod helm-assistant-demo-deployment-67c8f677db-bm4g5 events 0s          Warning   Unhealthy   pod/helm-assistant-demo-deployment-67c8f677db-bm4g5   Readiness probe failed: cat: can't open '/var/lock/ready.lock': No such file or directory
+pod helm-assistant-demo-deployment-67c8f677db-6fcw6 events 0s          Warning   Unhealthy   pod/helm-assistant-demo-deployment-67c8f677db-6fcw6   Readiness probe failed: cat: can't open '/var/lock/ready.lock': No such file or directory
+ready.go:277: [debug] Deployment is not ready: default/helm-assistant-demo-deployment. 0 out of 1 expected pods are ready
+logs helm-assistant-demo-deployment-67c8f677db-6fcw6 [worker-app] ---------------------------------
+logs helm-assistant-demo-deployment-67c8f677db-6fcw6 [worker-app]          MAIN PROCESS
+logs helm-assistant-demo-deployment-67c8f677db-6fcw6 [worker-app] ---------------------------------
+logs helm-assistant-demo-deployment-67c8f677db-6fcw6 [worker-app] I: 1
+logs helm-assistant-demo-deployment-67c8f677db-6fcw6 [worker-app] I: 2
+pod helm-assistant-demo-deployment-67c8f677db-6fcw6 events 0s          Warning   Unhealthy   pod/helm-assistant-demo-deployment-67c8f677db-6fcw6   Readiness probe failed: cat: can't open '/var/lock/ready.lock': No such file or directory
+pod helm-assistant-demo-deployment-67c8f677db-bm4g5 events 0s          Warning   Unhealthy   pod/helm-assistant-demo-deployment-67c8f677db-bm4g5   Readiness probe failed: cat: can't open '/var/lock/ready.lock': No such file or directory
+pod helm-assistant-demo-deployment-67c8f677db-6fcw6 events 0s          Warning   Unhealthy   pod/helm-assistant-demo-deployment-67c8f677db-6fcw6   Readiness probe failed: cat: can't open '/var/lock/ready.lock': No such file or directory
+logs helm-assistant-demo-deployment-67c8f677db-bm4g5 [worker-app] ---------------------------------
+logs helm-assistant-demo-deployment-67c8f677db-bm4g5 [worker-app]          MAIN PROCESS
+logs helm-assistant-demo-deployment-67c8f677db-bm4g5 [worker-app] ---------------------------------
+logs helm-assistant-demo-deployment-67c8f677db-bm4g5 [worker-app] I: 1
+logs helm-assistant-demo-deployment-67c8f677db-bm4g5 [worker-app] I: 2
+logs helm-assistant-demo-deployment-67c8f677db-6fcw6 [worker-app] I: 3
+logs helm-assistant-demo-deployment-67c8f677db-bm4g5 [worker-app] I: 3
+ready.go:277: [debug] Deployment is not ready: default/helm-assistant-demo-deployment. 0 out of 1 expected pods are ready
+pod helm-assistant-demo-deployment-67c8f677db-bm4g5 events 0s          Warning   Unhealthy   pod/helm-assistant-demo-deployment-67c8f677db-bm4g5   Readiness probe failed: cat: can't open '/var/lock/ready.lock': No such file or directory
+pod helm-assistant-demo-deployment-67c8f677db-6fcw6 events 0s          Warning   Unhealthy   pod/helm-assistant-demo-deployment-67c8f677db-6fcw6   Readiness probe failed: cat: can't open '/var/lock/ready.lock': No such file or directory
+logs helm-assistant-demo-deployment-67c8f677db-bm4g5 [worker-app] I: 4
+logs helm-assistant-demo-deployment-67c8f677db-6fcw6 [worker-app] I: 4
+pod helm-assistant-demo-deployment-67c8f677db-bm4g5 events 0s          Warning   Unhealthy   pod/helm-assistant-demo-deployment-67c8f677db-bm4g5   Readiness probe failed: cat: can't open '/var/lock/ready.lock': No such file or directory
+pod helm-assistant-demo-deployment-67c8f677db-6fcw6 events 0s          Warning   Unhealthy   pod/helm-assistant-demo-deployment-67c8f677db-6fcw6   Readiness probe failed: cat: can't open '/var/lock/ready.lock': No such file or directory
+logs helm-assistant-demo-deployment-67c8f677db-bm4g5 [worker-app] I: 5
+logs helm-assistant-demo-deployment-67c8f677db-6fcw6 [worker-app] I: 5
+pod helm-assistant-demo-deployment-67c8f677db-bm4g5 events 0s          Warning   Unhealthy   pod/helm-assistant-demo-deployment-67c8f677db-bm4g5   Readiness probe failed: cat: can't open '/var/lock/ready.lock': No such file or directory
+pod helm-assistant-demo-deployment-67c8f677db-6fcw6 events 0s          Warning   Unhealthy   pod/helm-assistant-demo-deployment-67c8f677db-6fcw6   Readiness probe failed: cat: can't open '/var/lock/ready.lock': No such file or directory
+logs helm-assistant-demo-deployment-67c8f677db-bm4g5 [worker-app] I: 6
+ready.go:277: [debug] Deployment is not ready: default/helm-assistant-demo-deployment. 0 out of 1 expected pods are ready
+logs helm-assistant-demo-deployment-67c8f677db-6fcw6 [worker-app] I: 6
+pod helm-assistant-demo-deployment-67c8f677db-6fcw6 events 0s          Warning   Unhealthy   pod/helm-assistant-demo-deployment-67c8f677db-6fcw6   Readiness probe failed: cat: can't open '/var/lock/ready.lock': No such file or directory
+pod helm-assistant-demo-deployment-67c8f677db-bm4g5 events 0s          Warning   Unhealthy   pod/helm-assistant-demo-deployment-67c8f677db-bm4g5   Readiness probe failed: cat: can't open '/var/lock/ready.lock': No such file or directory
+logs helm-assistant-demo-deployment-67c8f677db-bm4g5 [worker-app] I: 7
+logs helm-assistant-demo-deployment-67c8f677db-6fcw6 [worker-app] I: 7
+ready.go:277: [debug] Deployment is not ready: default/helm-assistant-demo-deployment. 0 out of 1 expected pods are ready
+pod helm-assistant-demo-deployment-67c8f677db-bm4g5 events 0s          Warning   Unhealthy   pod/helm-assistant-demo-deployment-67c8f677db-bm4g5   Readiness probe failed: cat: can't open '/var/lock/ready.lock': No such file or directory
+pod helm-assistant-demo-deployment-67c8f677db-6fcw6 events 0s          Warning   Unhealthy   pod/helm-assistant-demo-deployment-67c8f677db-6fcw6   Readiness probe failed: cat: can't open '/var/lock/ready.lock': No such file or directory
+logs helm-assistant-demo-deployment-67c8f677db-bm4g5 [worker-app] I: 8
+logs helm-assistant-demo-deployment-67c8f677db-6fcw6 [worker-app] I: 8
+pod helm-assistant-demo-deployment-67c8f677db-6fcw6 events 0s          Warning   Unhealthy   pod/helm-assistant-demo-deployment-67c8f677db-6fcw6   Readiness probe failed: cat: can't open '/var/lock/ready.lock': No such file or directory
+pod helm-assistant-demo-deployment-67c8f677db-bm4g5 events 0s          Warning   Unhealthy   pod/helm-assistant-demo-deployment-67c8f677db-bm4g5   Readiness probe failed: cat: can't open '/var/lock/ready.lock': No such file or directory
+logs helm-assistant-demo-deployment-67c8f677db-bm4g5 [worker-app] I: 9
+logs helm-assistant-demo-deployment-67c8f677db-6fcw6 [worker-app] I: 9
+ready.go:277: [debug] Deployment is not ready: default/helm-assistant-demo-deployment. 0 out of 1 expected pods are ready
+pod helm-assistant-demo-deployment-67c8f677db-bm4g5 events 0s          Warning   Unhealthy   pod/helm-assistant-demo-deployment-67c8f677db-bm4g5   Readiness probe failed: cat: can't open '/var/lock/ready.lock': No such file or directory
+pod helm-assistant-demo-deployment-67c8f677db-6fcw6 events 0s          Warning   Unhealthy   pod/helm-assistant-demo-deployment-67c8f677db-6fcw6   Readiness probe failed: cat: can't open '/var/lock/ready.lock': No such file or directory
+logs helm-assistant-demo-deployment-67c8f677db-bm4g5 [worker-app] I: 10
+logs helm-assistant-demo-deployment-67c8f677db-bm4g5 [worker-app] Add ready.lock
+logs helm-assistant-demo-deployment-67c8f677db-6fcw6 [worker-app] I: 10
+logs helm-assistant-demo-deployment-67c8f677db-6fcw6 [worker-app] Add ready.lock
+pods helm-assistant-demo-deployment-67c8f677db-bm4g5   1/1     Running             0          13s
+logs helm-assistant-demo-deployment-67c8f677db-bm4g5 [worker-app] I: 11
+pods helm-assistant-demo-deployment-67c8f677db-6fcw6   1/1     Running             0          13s
+logs helm-assistant-demo-deployment-67c8f677db-6fcw6 [worker-app] I: 11
+logs helm-assistant-demo-deployment-67c8f677db-bm4g5 [worker-app] I: 12
+logs helm-assistant-demo-deployment-67c8f677db-6fcw6 [worker-app] I: 12
+logs helm-assistant-demo-deployment-67c8f677db-bm4g5 [worker-app] I: 13
+NAME: helm-assistant-demo-deployment
+LAST DEPLOYED: Mon Nov 21 20:19:49 2022
+NAMESPACE: default
+STATUS: deployed
+REVISION: 1
+TEST SUITE: None
+USER-SUPPLIED VALUES:
+{}
+COMPUTED VALUES:
+app:
+  command: bash /test.sh
+  commandConfig:
+    debug: false
+  externalSecrets: []
+  preRun: []
+  preRunConfig:
+    debug: false
+image:
+  digest: digest2
+  pullPolicy: Always
+  pullSecrets: []
+  registry: docker.io
+  repository: someblackmagic/helm-deployer
+  tag: tests-image
+metadata:
+  deployedBy: null-value
+  pipelineUrl: null-value
+podSecurityContext:
+  enabled: false
+  fsGroup: 1000
+  runAsUser: 1000
+replicas: 2
+resources:
+  enabled: true
+  limits: {}
+  requests: {}
+updateStrategy:
+  rollingUpdate:
+    maxSurge: 1
+    maxUnavailable: 1
+  type: RollingUpdate
+HOOKS:
+MANIFEST:
+---
+# Source: worker/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: helm-assistant-demo-deployment
+  labels:
+    helm.sh/chart-name: worker
+    helm.sh/chart-version: 0.2.0
+    app.kubernetes.io/name: helm-assistant-demo-deployment
+    app.kubernetes.io/instance: helm-assistant-demo-deployment
+    app.kubernetes.io/managed-by: Helm
+  annotations:
+    metadata/deployed-by: "null-value"
+    metadata/pipeline-url: "null-value"
+spec:
+  replicas: 2
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: worker
+      app.kubernetes.io/instance: helm-assistant-demo-deployment
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: worker
+        app.kubernetes.io/instance: helm-assistant-demo-deployment
+      annotations:
+        imageDigest: "digest2"
+        rollMe: "wCT0n"
+    spec:
+      terminationGracePeriodSeconds: 10
+      initContainers:
+      containers:
+        - name: worker-app
+# only for debug chart
+          image: "docker.io/someblackmagic/helm-deployer:tests-image"
+          imagePullPolicy: Always
+          args:
+            - "bash"
+            - "/test.sh"
+          envFrom:
+          resources:
+            limits: {}
+            requests: {}
+          readinessProbe:
+            periodSeconds: 1
+            exec:
+              command:
+                - cat
+                - /var/lock/ready.lock
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 1
+              podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app.kubernetes.io/name: worker
+                    app.kubernetes.io/instance: helm-assistant-demo-deployment
+                topologyKey: kubernetes.io/hostname
+PCNTL signal received. Graceful stop all modules. [ 'exit' ]
+System gracefully stopped
+

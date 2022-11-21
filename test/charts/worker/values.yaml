@@ -1,7 +1,7 @@
 metadata:
   deployedBy: null-value
   pipelineUrl: null-value
-replicas: 1
+replicas: 2
 image:
   registry: docker.io
   repository: someblackmagic/helm-deployer
@@ -29,8 +29,8 @@ updateStrategy:
   ##
   type: RollingUpdate
   rollingUpdate:
-    maxUnavailable: 4
-    maxSurge: 3
+    maxUnavailable: 1
+    maxSurge: 1
 
 resources:
   enabled: true
