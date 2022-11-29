@@ -250,7 +250,7 @@ export class UpgradeModule {
                 });
             } else {
                 this.subProcesses[logPrefix.replace(/\s/g, '-')] = process;
-                resolve();
+                resolve('{}');
             }
 
         });

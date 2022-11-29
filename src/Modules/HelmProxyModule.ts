@@ -5,8 +5,8 @@ import {clearTimeout} from 'timers';
 export class HelmProxyModule {
     private process: ChildProcessWithoutNullStreams;
 
-    public async runHelmCMD(cmd: string, cliArgs: string[]): Promise<any> {
-        return new Promise<any>((resolve, reject) => {
+    public async runHelmCMD(cmd: string, cliArgs: string[]): Promise<void> {
+        return new Promise<void>((resolve, reject) => {
             this.process = spawn(cmd, cliArgs.filter((item) => { return item !== ''; }));
 
             this.process.stdout.on('data', (arrayBuffer) => {
