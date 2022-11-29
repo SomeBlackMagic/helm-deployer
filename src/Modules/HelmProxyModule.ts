@@ -43,7 +43,7 @@ export class HelmProxyModule {
         });
     }
 
-    public async stop(): Promise<any> {
+    public async stop(): Promise<void> {
         if (this.process === null) {
             return Promise.resolve();
         }
