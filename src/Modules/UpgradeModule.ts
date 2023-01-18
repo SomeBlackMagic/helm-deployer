@@ -12,30 +12,15 @@ export class UpgradeModule {
     private timeouts: NodeJS.Timeout[] = [];
     private intervals: any[] = [];
 
-    public async run(cliArgs: string[]) {
-        let BreakException = {};
-
-        try {
-            cliArgs.forEach((item) => {
-                const symbol = item.slice(0, 1);
-                const first2 = item.slice(0, 2);
-                if (first2 !== '--' && symbol !== '-' && item !== 'upgrade') {
-                    this.realiseName = item;
-                    throw BreakException;
-                }
-            });
-        } catch (e) {
-            if (e !== BreakException) throw e;
-        }
-
-
+    public async run(cliArgs: any): Promise<any> {
+        this.realiseName = cliArgs._[1];
         if (ConfigFactory.getCore().HELM_ASSISTANT_UPGRADE_PIPE_LOGS === true) {
             this.kubectlWatchPodsLogsAndEvents();
             await this.kubectlWatchPods();
         }
-        if (ConfigFactory.getCore().HELM_ASSISTANT_UPGRADE_JOB_STRICT === true && inArray(cliArgs, '--wait-for-jobs')) {
-            await this.watchJobStatus();
-        }
+        // if (ConfigFactory.getCore().HELM_ASSISTANT_UPGRADE_JOB_STRICT === true && inArray(cliArgs, '--wait-for-jobs')) {
+        //     await this.watchJobStatus();
+        // }
 
     }
 
@@ -97,6 +82,9 @@ export class UpgradeModule {
                 ];
                 const pods = await this.createChildProcess(ConfigFactory.getCore().KUBECTL_BIN_PATH, newProcessArgs, true, true);
                 let podList: any = JSON.parse(pods);
+                if (podList.items === undefined) {
+                    return;
+                }
                 podList.items.forEach((podItem: any) => {
                     this.kubectlWatchPodEvents(podItem.metadata.name);
                     if (podItem.status.initContainerStatuses !== undefined) {
@@ -137,6 +125,7 @@ export class UpgradeModule {
                 ...ConfigFactory.getCore().KUBECTL_CMD_ARGS.split(' '),
                 'logs',
                 '--follow',
+                '--tail', '10',
                 '--namespace', ConfigFactory.getCore().KUBE_NAMESPACE,
                 '--container', containerName,
                 podName

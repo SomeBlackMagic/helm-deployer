@@ -3,7 +3,7 @@ import {processSignalDebug} from '../Helpers';
 import {clearTimeout} from 'timers';
 
 export class HelmProxyModule {
-    private process: ChildProcessWithoutNullStreams;
+    private process: ChildProcessWithoutNullStreams | null = null;
 
     public async runHelmCMD(cmd: string, cliArgs: string[]): Promise<void> {
         return new Promise<void>((resolve, reject) => {
