@@ -77,11 +77,11 @@ processHelper.subscribeOnProcessExit();
     }
 
 
-    await helmProxyModule.runHelmCMD(ConfigFactory.getCore().HELM_BIN_PATH, [
-        ...HELM_CMD_ARGS.split(' '),
-        ...process.argv.slice(2)
-    ]);
-    processHelper.exitHandler({code: 'exit'});
+    // await helmProxyModule.runHelmCMD(ConfigFactory.getCore().HELM_BIN_PATH, [
+    //     ...HELM_CMD_ARGS.split(' '),
+    //     ...process.argv.slice(2)
+    // ]);
+    // processHelper.exitHandler({code: 'exit'});
 
 })();
 

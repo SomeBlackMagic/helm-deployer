@@ -2,6 +2,7 @@ import {ChildProcessWithoutNullStreams, spawn} from 'child_process';
 import {inArray, processSignalDebug} from '../Helpers';
 import {ConfigFactory} from '../Config/app-config';
 import {clearTimeout} from 'timers';
+import ProcessLocker from '../Components/ProcessLocker';
 
 const cliColor = require('cli-color');
 
@@ -18,9 +19,14 @@ export class UpgradeModule {
             this.kubectlWatchPodsLogsAndEvents();
             await this.kubectlWatchPods();
         }
-        // if (ConfigFactory.getCore().HELM_ASSISTANT_UPGRADE_JOB_STRICT === true && inArray(cliArgs, '--wait-for-jobs')) {
-        //     await this.watchJobStatus();
-        // }
+        if (ConfigFactory.getCore().HELM_ASSISTANT_UPGRADE_JOB_STRICT === true && cliArgs?.waitForJobs === true) {
+            await this.watchJobStatus();
+        }
+
+        if (ConfigFactory.getCore().HELM_ASSISTANT_REALISE_LOCK_ENABLED === true) {
+            const lockComponent = new ProcessLocker();
+            await lockComponent.getLock(cliArgs.namespace + '-' + this.realiseName);
+        }
 
     }
 
@@ -134,7 +140,7 @@ export class UpgradeModule {
     }
 
     private async watchJobStatus() {
-        let newProcessArgs: string[] =
+        const newProcessArgs: string[] =
             [
                 ...ConfigFactory.getCore().KUBECTL_CMD_ARGS.split(' '),
                 'get', 'job',
@@ -161,7 +167,6 @@ export class UpgradeModule {
             })();
         }, 1000));
     }
-
 
     private async createChildProcess(command: string, args: string[], wait: boolean = false, grabStdOut: boolean = false, pipeLogs: boolean = false, logPrefix: string = '', logColor: string = 'white') {
         if (this.isExit === true) {
@@ -244,4 +249,5 @@ export class UpgradeModule {
 
         });
     }
+
 }
