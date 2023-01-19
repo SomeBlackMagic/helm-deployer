@@ -6,6 +6,8 @@ This project is a helm wrapper to fix some bugs:
 * https://github.com/helm/helm/issues/3481
 * https://github.com/helm/helm/issues/9285
 
+Also implement upgrade locker. When using multiple deploy with the same non-concurrent resource additional locks needed.
+
 When you run helm-assistant upgrade <some arguments> application run new sub process ```helm upgrade <some arguments>```, pipe logs 
 and also run kubectl process for grab additional data about deployment.
 Also if you run deployment with flag --wait-for-jobs application check deployed job, and if status if `Failed` 
