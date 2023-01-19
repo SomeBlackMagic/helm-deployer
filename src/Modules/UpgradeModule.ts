@@ -15,17 +15,17 @@ export class UpgradeModule {
 
     public async run(cliArgs: any): Promise<any> {
         this.realiseName = cliArgs._[1];
+        if (ConfigFactory.getCore().HELM_ASSISTANT_REALISE_LOCK_ENABLED === true) {
+            const lockComponent = new ProcessLocker();
+            await lockComponent.getLock(cliArgs.namespace + '-' + this.realiseName);
+        }
+
         if (ConfigFactory.getCore().HELM_ASSISTANT_UPGRADE_PIPE_LOGS === true) {
             this.kubectlWatchPodsLogsAndEvents();
             await this.kubectlWatchPods();
         }
         if (ConfigFactory.getCore().HELM_ASSISTANT_UPGRADE_JOB_STRICT === true && cliArgs?.waitForJobs === true) {
             await this.watchJobStatus();
-        }
-
-        if (ConfigFactory.getCore().HELM_ASSISTANT_REALISE_LOCK_ENABLED === true) {
-            const lockComponent = new ProcessLocker();
-            await lockComponent.getLock(cliArgs.namespace + '-' + this.realiseName);
         }
 
     }
@@ -89,6 +89,7 @@ export class UpgradeModule {
                 const pods = await this.createChildProcess(ConfigFactory.getCore().KUBECTL_BIN_PATH, newProcessArgs, true, true);
                 let podList: any = JSON.parse(pods);
                 if (podList.items === undefined) {
+                    console.log('[helm-assistant]  WARNING: empty pod list on kubectl get pods');
                     return;
                 }
                 podList.items.forEach((podItem: any) => {
@@ -109,7 +110,6 @@ export class UpgradeModule {
                     }
                 });
             })();
-
         }, 1000));
     }
 
@@ -131,7 +131,7 @@ export class UpgradeModule {
                 ...ConfigFactory.getCore().KUBECTL_CMD_ARGS.split(' '),
                 'logs',
                 '--follow',
-                '--tail', '10',
+                '--tail', ConfigFactory.getCore().HELM_ASSISTANT_UPGRADE_PIPE_LOGS_TAIL_LINES.toString(),
                 '--namespace', ConfigFactory.getCore().KUBE_NAMESPACE,
                 '--container', containerName,
                 podName

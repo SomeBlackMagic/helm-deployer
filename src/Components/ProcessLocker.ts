@@ -7,13 +7,20 @@ export default class ProcessLocker {
 
     private driver: 'fs' | 'redis';
 
+    public options: ProcessLockerOptions;
+
     private timer: NodeJS.Timeout | string | number | undefined;
 
     public constructor() {
+        this.options = {
+            maxRetries: ConfigFactory.getCore().HELM_ASSISTANT_REALISE_LOCK_MAX_RETRIES,
+            driver: ConfigFactory.getCore().HELM_ASSISTANT_REALISE_LOCK_DRIVER,
+            fsDirPath: ConfigFactory.getCore().HELM_ASSISTANT_REALISE_LOCK_FS_DIR_PATH
+        };
     }
-    public async getLock(resource: string): Promise<any> {
+    public async getLock(resource: string): Promise<boolean> {
         await this.initFSLocker();
-        await this.waitAvailability(resource);
+        return await this.waitAvailability(resource);
 
     }
 
@@ -22,31 +29,60 @@ export default class ProcessLocker {
     }
 
     private initFSLocker():  Promise<any> {
-        console.log(ConfigFactory.getCore().HELM_ASSISTANT_REALISE_LOCK_FS_DIR_PATH);
-        const res = fs.mkdirSync(ConfigFactory.getCore().HELM_ASSISTANT_REALISE_LOCK_FS_DIR_PATH, {recursive: true});
+        const res = fs.mkdirSync(this.options.fsDirPath, {recursive: true});
         return Promise.resolve();
     }
 
     private async waitAvailability(key:string): Promise<boolean> {
-        console.log('[realise-locker] NOTICE: Waiting for lock on: ' + ConfigFactory.getCore().HELM_ASSISTANT_REALISE_LOCK_FS_DIR_PATH + '/' + key);
-        this.timer = setInterval(() => {
-            (async () => {
-                const data = this.getLockData(key);
-                console.log(data);
-            })();
-        }, 1000);
-
-
+        return new Promise<boolean>((resolve, reject) => {
+            console.log('[realise-locker] NOTICE: Waiting for lock on: ' + this.options.fsDirPath + '/' + key + '.lock');
+            this.timer = setInterval(() => {
+                (async () => {
+                    const content = this.getLockData(key);
+                    if (content === false) {
+                        const result = await this.putLockData(key);
+                        clearInterval(this.timer);
+                        resolve(result);
+                    }
+                    const data = new Date(content.toString());
+                    if (data < new Date()) {
+                        console.log('[realise-locker] WARNING: Lock file exist but he is expired: ' + this.options.fsDirPath + '/' + key + '.lock');
+                        const result = await this.putLockData(key);
+                        clearInterval(this.timer);
+                        resolve(result);
+                    } else {
+                        process.stdout.write('.');
+                    }
+                })();
+            }, 1000);
+        });
     }
 
     private getLockData(key: string):  string | false {
-        if (fs.existsSync(ConfigFactory.getCore().HELM_ASSISTANT_REALISE_LOCK_FS_DIR_PATH + '/' + key)) {
-            return fs.readFileSync(ConfigFactory.getCore().HELM_ASSISTANT_REALISE_LOCK_FS_DIR_PATH + '/' + key, 'utf8');
+        if (fs.existsSync(this.options.fsDirPath + '/' + key + '.lock')) {
+            return fs.readFileSync(this.options.fsDirPath + '/' + key + '.lock', 'utf8');
         }
         return false;
     }
-    private putLockData(key: string) {
-        return fs.readFileSync(ConfigFactory.getCore().HELM_ASSISTANT_REALISE_LOCK_FS_DIR_PATH + '/' + key, 'utf8');
+    private putLockData(key: string): Promise<boolean> {
+        const date = new Date();
+        date.setSeconds(date.getSeconds() + this.options.maxRetries);
+        return new Promise(function(resolve, reject) {
+            fs.writeFile(this.options.fsDirPath + '/' + key + '.lock', date.toString(), 'utf8', function(err) {
+                if (err) {
+                    console.error('[realise-locker] ERROR: Can not create lock file: ' + JSON.stringify(err));
+                    reject(false);
+                } else {
+                    console.info('[realise-locker] INFO: Successfully acquired lock on: ' + this.options.fsDirPath + '/' + key + '.lock');
+                    resolve(true);
+                }
+            }.bind(this));
+        }.bind(this));
     }
 
+}
+interface ProcessLockerOptions {
+    maxRetries: number;
+    driver: string;
+    fsDirPath: string;
 }
