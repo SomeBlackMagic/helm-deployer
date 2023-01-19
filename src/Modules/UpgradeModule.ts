@@ -2,6 +2,7 @@ import {ChildProcessWithoutNullStreams, spawn} from 'child_process';
 import {inArray, processSignalDebug} from '../Helpers';
 import {ConfigFactory} from '../Config/app-config';
 import {clearTimeout} from 'timers';
+import ProcessLocker from '../Components/ProcessLocker';
 
 const cliColor = require('cli-color');
 
@@ -12,28 +13,18 @@ export class UpgradeModule {
     private timeouts: NodeJS.Timeout[] = [];
     private intervals: any[] = [];
 
-    public async run(cliArgs: string[]) {
-        let BreakException = {};
-
-        try {
-            cliArgs.forEach((item) => {
-                const symbol = item.slice(0, 1);
-                const first2 = item.slice(0, 2);
-                if (first2 !== '--' && symbol !== '-' && item !== 'upgrade') {
-                    this.realiseName = item;
-                    throw BreakException;
-                }
-            });
-        } catch (e) {
-            if (e !== BreakException) throw e;
+    public async run(cliArgs: any): Promise<any> {
+        this.realiseName = cliArgs._[1];
+        if (ConfigFactory.getCore().HELM_ASSISTANT_REALISE_LOCK_ENABLED === true) {
+            const lockComponent = new ProcessLocker();
+            await lockComponent.getLock(cliArgs.namespace + '-' + this.realiseName);
         }
-
 
         if (ConfigFactory.getCore().HELM_ASSISTANT_UPGRADE_PIPE_LOGS === true) {
             this.kubectlWatchPodsLogsAndEvents();
             await this.kubectlWatchPods();
         }
-        if (ConfigFactory.getCore().HELM_ASSISTANT_UPGRADE_JOB_STRICT === true && inArray(cliArgs, '--wait-for-jobs')) {
+        if (ConfigFactory.getCore().HELM_ASSISTANT_UPGRADE_JOB_STRICT === true && cliArgs?.waitForJobs === true) {
             await this.watchJobStatus();
         }
 
@@ -97,6 +88,10 @@ export class UpgradeModule {
                 ];
                 const pods = await this.createChildProcess(ConfigFactory.getCore().KUBECTL_BIN_PATH, newProcessArgs, true, true);
                 let podList: any = JSON.parse(pods);
+                if (podList.items === undefined) {
+                    console.log('[helm-assistant]  WARNING: empty pod list on kubectl get pods');
+                    return;
+                }
                 podList.items.forEach((podItem: any) => {
                     this.kubectlWatchPodEvents(podItem.metadata.name);
                     if (podItem.status.initContainerStatuses !== undefined) {
@@ -115,7 +110,6 @@ export class UpgradeModule {
                     }
                 });
             })();
-
         }, 1000));
     }
 
@@ -137,6 +131,7 @@ export class UpgradeModule {
                 ...ConfigFactory.getCore().KUBECTL_CMD_ARGS.split(' '),
                 'logs',
                 '--follow',
+                '--tail', ConfigFactory.getCore().HELM_ASSISTANT_UPGRADE_PIPE_LOGS_TAIL_LINES.toString(),
                 '--namespace', ConfigFactory.getCore().KUBE_NAMESPACE,
                 '--container', containerName,
                 podName
@@ -145,7 +140,7 @@ export class UpgradeModule {
     }
 
     private async watchJobStatus() {
-        let newProcessArgs: string[] =
+        const newProcessArgs: string[] =
             [
                 ...ConfigFactory.getCore().KUBECTL_CMD_ARGS.split(' '),
                 'get', 'job',
@@ -172,7 +167,6 @@ export class UpgradeModule {
             })();
         }, 1000));
     }
-
 
     private async createChildProcess(command: string, args: string[], wait: boolean = false, grabStdOut: boolean = false, pipeLogs: boolean = false, logPrefix: string = '', logColor: string = 'white') {
         if (this.isExit === true) {
@@ -255,4 +249,5 @@ export class UpgradeModule {
 
         });
     }
+
 }
