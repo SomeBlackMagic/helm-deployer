@@ -45,6 +45,7 @@ processHelper.subscribeOnProcessExit();
         HELM_CMD_ARGS += ' --dry-run';
     }
     const argv:any = yargs(hideBin(process.argv))
+        .version(false)
         .option('wait', {type: 'boolean'})
         .option('wait-for-jobs', {type: 'boolean'})
         .option('atomic', {type: 'boolean'})
@@ -63,6 +64,7 @@ processHelper.subscribeOnProcessExit();
         .option('skip-crds', {type: 'boolean'})
         .option('verify', {type: 'boolean'})
         .option('verify', {type: 'boolean'})
+        .option('version', {type: 'string'})
         .parse();
 
 
