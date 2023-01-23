@@ -15,7 +15,7 @@
     "pkg": "^5.8.0",
     "@types/dotenv": "^8.2.0",
     "@types/tar-stream": "^2.1.0",
-    "@types/yargs": "^17.0.19",
+    "@types/yargs": "^17.0.20",
     "node-loader": "^0.6.0",
     "standard": "^17.0.0",
     "ts-loader": "^8.0.10",
