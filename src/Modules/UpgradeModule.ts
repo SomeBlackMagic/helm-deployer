@@ -10,14 +10,16 @@ export class UpgradeModule {
     private isExit: boolean = false;
     private subProcesses: { [n: string]: ChildProcessWithoutNullStreams } = {};
     private realiseName: string = '';
+    private namespace: string = '';
     private timeouts: NodeJS.Timeout[] = [];
     private intervals: any[] = [];
+    private lockComponent: ProcessLocker = new ProcessLocker();
 
     public async run(cliArgs: any): Promise<any> {
         this.realiseName = cliArgs._[1];
+        this.namespace = cliArgs.namespace;
         if (ConfigFactory.getCore().HELM_ASSISTANT_REALISE_LOCK_ENABLED === true) {
-            const lockComponent = new ProcessLocker();
-            await lockComponent.getLock(cliArgs.namespace + '-' + this.realiseName);
+            await this.lockComponent.getLock(this.namespace + '-' + this.realiseName);
         }
 
         if (ConfigFactory.getCore().HELM_ASSISTANT_UPGRADE_PIPE_LOGS === true) {
@@ -38,6 +40,7 @@ export class UpgradeModule {
         this.intervals.forEach((item) => {
             clearInterval(item);
         });
+        await this.lockComponent.clearLock(this.namespace + '-' + this.realiseName);
         let promises = Object.entries(this.subProcesses).map((entry) => {
             const [key, item] = entry;
             return new Promise((resolve, reject) => {

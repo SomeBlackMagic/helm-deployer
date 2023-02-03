@@ -11,7 +11,7 @@ trap_exit() {
 }
 
 echo "---------------------------------"
-echo "         MAIN PROCESS"
+echo "         MAIN PROCESS            "
 echo "---------------------------------"
 
 count=0

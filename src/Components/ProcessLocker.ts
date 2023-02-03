@@ -23,9 +23,22 @@ export default class ProcessLocker {
         return await this.waitAvailability(resource);
 
     }
-
-    public clearLock(): Promise<any> {
-        return Promise.resolve();
+    public clearLock(resource: string): Promise<any> {
+        return new Promise(function(resolve, reject) {
+            if (fs.existsSync(this.options.fsDirPath + '/' + resource + '.lock')) {
+                fs.unlink(this.options.fsDirPath + '/' + resource + '.lock', function(err) {
+                    if (err) {
+                        console.error('[realise-locker] ERROR: Can not remove lock file: ' + this.options.fsDirPath + '/' + resource + '.lock');
+                        resolve(true);
+                    } else {
+                        console.info('[realise-locker] INFO: Successfully unlock: ' + this.options.fsDirPath + '/' + resource + '.lock');
+                        resolve(true);
+                    }
+                }.bind(this));
+            } else {
+                console.error('[realise-locker] DEBUG: lock file not found');
+            }
+        }.bind(this));
     }
 
     private initFSLocker():  Promise<any> {
