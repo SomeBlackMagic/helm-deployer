@@ -69,8 +69,7 @@ export class UpgradeModule {
     private async kubectlWatchPods() {
         let args: string[] = [
             ...ConfigFactory.getCore().KUBECTL_CMD_ARGS.split(' '),
-            'get',
-            'pods',
+            'get', 'pods',
             '--watch',
             '--namespace', ConfigFactory.getCore().KUBE_NAMESPACE,
             '--selector', 'app.kubernetes.io/instance=' + this.realiseName
@@ -236,7 +235,6 @@ export class UpgradeModule {
 
             if (wait === true) {
                 process.on('exit', (code: number | null, signal: NodeJS.Signals | null) => {
-                    delete this.subProcesses[logPrefix.replace(/\s/g, '-')];
                     if ((code === 0 || code === 1) && wait === true) {
                         resolve(stdout);
                     } else if (signal === 'SIGINT') {
@@ -247,6 +245,9 @@ export class UpgradeModule {
                 });
             } else {
                 this.subProcesses[logPrefix.replace(/\s/g, '-')] = process;
+                process.on('exit', (code: number | null, signal: NodeJS.Signals | null) => {
+                    delete this.subProcesses[logPrefix.replace(/\s/g, '-')];
+                });
                 resolve('{}');
             }
 

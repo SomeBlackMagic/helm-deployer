@@ -44,7 +44,7 @@ export class ProcessHelper {
             console.error(reason['message']);
             console.error(reason['stack']);
         } else {
-            console.log(JSON.stringify(reason));
+            console.error(JSON.stringify(reason));
         }
         console.error('-----------------------------------');
         process.emit('SIGTERM');

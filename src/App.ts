@@ -29,8 +29,6 @@ processHelper.setExitHandler((data: { code: string }) => {
             process.exitCode = 1;
         });
         console.log('System gracefully stopped');
-        // @ts-ignore
-        // await process.flushLogs();
     })();
 });
 processHelper.subscribeOnProcessExit();
