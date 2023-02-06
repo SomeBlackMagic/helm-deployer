@@ -16,6 +16,20 @@ export class UpgradeModule {
     private lockComponent: ProcessLocker = new ProcessLocker();
 
     public async run(cliArgs: any): Promise<any> {
+        if (ConfigFactory.getCore().HELM_ASSISTANT_DEBUG === true && ConfigFactory.getCore().HELM_ASSISTANT_DEBUG_LEVEL >= 3) {
+            const tracer = setInterval(() => {
+                // this.subProcesses
+                for (const [key, value] of Object.entries(this.subProcesses)) {
+                    console.log(`${key}: ${value.pid}`);
+                }
+
+
+                if (Object.entries(this.subProcesses).length === 0 && this.isExit) {
+                    console.log('All subProcesses stop.');
+                    clearInterval(tracer);
+                }
+            }, 1000);
+        }
         this.realiseName = cliArgs._[1];
         this.namespace = cliArgs.namespace;
         if (ConfigFactory.getCore().HELM_ASSISTANT_REALISE_LOCK_ENABLED === true) {

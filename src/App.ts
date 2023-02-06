@@ -1,4 +1,4 @@
-import {inArray, loadEnvVariablesFromFile, processSignalDebug} from './Helpers';
+import {inArray, loadEnvVariablesFromFile} from './Helpers';
 import {UpgradeModule} from './Modules/UpgradeModule';
 import {ProcessHelper} from './ProcessHelper';
 import {ConfigFactory} from './Config/app-config';
