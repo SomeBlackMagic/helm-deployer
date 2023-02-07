@@ -37,6 +37,7 @@ export default class ProcessLocker {
                 }.bind(this));
             } else {
                 process.stderr.write('[realise-locker] DEBUG: lock file not found' + '\n');
+                resolve(true);
             }
         }.bind(this));
     }
