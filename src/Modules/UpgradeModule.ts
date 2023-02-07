@@ -3,6 +3,9 @@ import {inArray, processSignalDebug} from '../Helpers';
 import {ConfigFactory} from '../Config/app-config';
 import {clearTimeout} from 'timers';
 import ProcessLocker from '../Components/ProcessLocker';
+import * as console from 'console';
+import Logger from '../Components/Logger';
+import {SubProcessTracer} from '../Components/SubProcessTracer';
 
 const cliColor = require('cli-color');
 
@@ -16,20 +19,20 @@ export class UpgradeModule {
     private lockComponent: ProcessLocker = new ProcessLocker();
 
     public async run(cliArgs: any): Promise<any> {
-        if (ConfigFactory.getCore().HELM_ASSISTANT_DEBUG === true && ConfigFactory.getCore().HELM_ASSISTANT_DEBUG_LEVEL >= 3) {
-            const tracer = setInterval(() => {
-                // this.subProcesses
-                for (const [key, value] of Object.entries(this.subProcesses)) {
-                    console.log(`${key}: ${value.pid}`);
-                }
-
-
-                if (Object.entries(this.subProcesses).length === 0 && this.isExit) {
-                    console.log('All subProcesses stop.');
-                    clearInterval(tracer);
-                }
-            }, 1000);
-        }
+        // if (ConfigFactory.getCore().HELM_ASSISTANT_DEBUG === true && ConfigFactory.getCore().HELM_ASSISTANT_DEBUG_LEVEL >= 3) {
+        //     const tracer = setInterval(() => {
+        //         // this.subProcesses
+        //         for (const [key, value] of Object.entries(this.subProcesses)) {
+        //             Logger.trace('UpgradeModule', `${key}: ${value.pid}`);
+        //         }
+        //
+        //
+        //         if (Object.entries(this.subProcesses).length === 0 && this.isExit) {
+        //             Logger.trace('UpgradeModule', 'All subProcesses stop.');
+        //             clearInterval(tracer);
+        //         }
+        //     }, 500);
+        // }
         this.realiseName = cliArgs._[1];
         this.namespace = cliArgs.namespace;
         if (ConfigFactory.getCore().HELM_ASSISTANT_REALISE_LOCK_ENABLED === true) {
@@ -55,6 +58,8 @@ export class UpgradeModule {
             clearInterval(item);
         });
         await this.lockComponent.clearLock(this.namespace + '-' + this.realiseName);
+
+        Logger.trace('UpgradeModule:stop', 'Stop all subprocess', {count: Object.entries(this.subProcesses).length});
         let promises = Object.entries(this.subProcesses).map((entry) => {
             const [key, item] = entry;
             return new Promise((resolve, reject) => {
@@ -62,18 +67,20 @@ export class UpgradeModule {
                 item.kill('SIGTERM');
                 const interval = setInterval(() => {
                     // https://github.com/kubernetes/kubectl/blob/652881798563c00c1895ded6ced819030bfaa4d7/pkg/util/interrupt/interrupt.go#L28
+                    Logger.trace('UpgradeModule:stop', 'Send SIGTERM again', {pid: item.pid});
                     item.kill('SIGTERM');
                 }, 1000);
                 const timer = setTimeout(() => {
                     clearInterval(interval);
-                    console.log('Stop process ' + key + ' timeout. Killing');
+                    Logger.trace('UpgradeModule:stop', 'Stop process ' + key + ' timeout. Killing', {pid: item.pid});
                     item.kill('SIGKILL');
                 }, 5000);
 
                 item.on('exit', (code: number) => {
                     clearInterval(interval);
                     clearTimeout(timer);
-                    resolve(code);
+                    Logger.trace('UpgradeModule:stop', 'Process ' + key + ' stopped', {pid: item.pid});
+                    resolve({exitCode: code});
                 });
             });
         });
@@ -245,7 +252,7 @@ export class UpgradeModule {
 
                 });
             }
-            processSignalDebug(logPrefix + ':->', process);
+            SubProcessTracer.getInstance().watch(process);
 
             if (wait === true) {
                 process.on('exit', (code: number | null, signal: NodeJS.Signals | null) => {
@@ -259,7 +266,9 @@ export class UpgradeModule {
                 });
             } else {
                 this.subProcesses[logPrefix.replace(/\s/g, '-')] = process;
+                Logger.trace('UpgradeModule', 'Add to subProcesses', {name: logPrefix.replace(/\s/g, '-'), pid:process.pid });
                 process.on('exit', (code: number | null, signal: NodeJS.Signals | null) => {
+                    Logger.trace('UpgradeModule', 'Remove from subProcesses', {name: logPrefix.replace(/\s/g, '-'), pid:process.pid });
                     delete this.subProcesses[logPrefix.replace(/\s/g, '-')];
                 });
                 resolve('{}');
@@ -267,5 +276,4 @@ export class UpgradeModule {
 
         });
     }
-
 }

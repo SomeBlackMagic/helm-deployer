@@ -1,6 +1,7 @@
 import {ChildProcessWithoutNullStreams, spawn} from 'child_process';
-import {processSignalDebug} from '../Helpers';
+// import {processSignalDebug} from '../Helpers';
 import {clearTimeout} from 'timers';
+import {SubProcessTracer} from '../Components/SubProcessTracer';
 
 export class HelmProxyModule {
     private process: ChildProcessWithoutNullStreams | null = null;
@@ -27,7 +28,7 @@ export class HelmProxyModule {
 
             });
 
-            processSignalDebug('helm:->', this.process);
+            SubProcessTracer.getInstance().watch(this.process);
 
             this.process.on('exit', (code: number | null, signal: NodeJS.Signals | null) => {
                 if (code === 0 || signal === 'SIGINT') {
@@ -43,12 +44,13 @@ export class HelmProxyModule {
         });
     }
 
-    public async stop(): Promise<void> {
+    public async stop(): Promise<boolean> {
         if (this.process === null) {
-            return Promise.resolve();
+            return Promise.resolve(true);
         }
         return new Promise((resolve, reject) => {
             this.process.kill('SIGINT');
+
             const  timer = setTimeout(() => {
                 console.log('Timeout waiting stop helm. Killing');
                 this.process.kill('SIGKILL');
@@ -61,7 +63,7 @@ export class HelmProxyModule {
                 this.process = null;
                 console.log('Helm exit code: ' + code + ' signal ' + signal);
                 clearTimeout(timer);
-                resolve();
+                resolve(true);
             });
         });
     }

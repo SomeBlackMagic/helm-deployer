@@ -7,6 +7,7 @@ import {VersionModule} from './Modules/VersionModule';
 import * as console from 'console';
 import {hideBin} from 'yargs/helpers';
 import * as yargs from 'yargs';
+import Logger from './Components/Logger';
 
 loadEnvVariablesFromFile();
 
@@ -15,8 +16,8 @@ const upgradeModule = new UpgradeModule();
 const helmProxyModule = new HelmProxyModule();
 const versionModule = new VersionModule();
 
-
 processHelper.setExitHandler((data: { code: string }) => {
+    process.emit('message', '', '');
     (async () => {
         if (!inArray(['exit'], data.code)) {
             console.log('PCNTL signal received ', [data.code]);

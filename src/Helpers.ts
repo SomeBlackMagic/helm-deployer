@@ -2,9 +2,9 @@
 import {config, DotenvParseOutput} from 'dotenv';
 import * as fs from 'fs';
 import {ChildProcessWithoutNullStreams} from 'child_process';
-import * as Process from 'process';
 import {ConfigFactory} from './Config/app-config';
 import * as console from 'console';
+import Logger from './Components/Logger';
 
 export function inArray(arr: string[] | number[] = [], val:string|number): boolean {
     let len = arr.length;
@@ -55,78 +55,76 @@ export function envBoolean(key: string, defaultValue: boolean): boolean {
 }
 
 export function processSignalDebug(name: string, stream: ChildProcessWithoutNullStreams | NodeJS.Process) {
-    if (ConfigFactory.getCore().HELM_ASSISTANT_DEBUG === true && ConfigFactory.getCore().HELM_ASSISTANT_DEBUG_LEVEL >= 1) {
+    if (ConfigFactory.getCore().HELM_ASSISTANT_DEBUG === true) {
         if ('spawnargs' in stream) {
-            console.log(name + ' ' + stream.spawnargs.join(' ') + ' [' + stream.pid + ']');
+            Logger.info('processDebugger', 'Spawn new process: [' + stream.pid + ']' + name + ' ' + stream.spawnargs.join(' '));
         } else {
-            console.log(name + ' ' + stream.argv.join(' ') + ' [' + stream.pid + ']');
+            Logger.info('processDebugger', 'Spawn new process: [' + stream.pid + ']' + name + ' ' + stream.argv.join(' '));
         }
-    }
 
-    if (ConfigFactory.getCore().HELM_ASSISTANT_DEBUG === true && ConfigFactory.getCore().HELM_ASSISTANT_DEBUG_LEVEL >= 2 ) {
-        stream.on('beforeExit', () => {console.log('[' + stream.pid + ']' + ' send => beforeExit'); });
-        stream.on('disconnect', () => {console.log('[' + stream.pid + ']' + ' send => disconnect'); });
-        stream.on('rejectionHandled', () => {console.log('[' + stream.pid + ']' + ' send => rejectionHandled'); });
-        stream.on('uncaughtException', () => {console.log('[' + stream.pid + ']' + ' send => uncaughtException'); });
-        stream.on('unhandledRejection', () => {console.log('[' + stream.pid + ']' + ' send => unhandledRejection'); });
-        stream.on('warning', (warning: Error) => {console.log('[' + stream.pid + ']' + ' send => warning' , warning); });
-        stream.on('message', () => {console.log('[' + stream.pid + ']' + ' send => message'); });
-        stream.on('removeListener', (type: string) => {console.log('[' + stream.pid + ']' + ' send => removeListener' , type); });
-        stream.on('multipleResolves', () => {console.log('[' + stream.pid + ']' + ' send => multipleResolves '); });
+        stream.on('beforeExit', () => {Logger.trace('processDebugger', '[' + stream.pid + ']' + ' send => beforeExit'); });
+        stream.on('disconnect', () => {Logger.trace('processDebugger', '[' + stream.pid + ']' + ' send => disconnect'); });
+        stream.on('rejectionHandled', () => {Logger.trace('processDebugger', '[' + stream.pid + ']' + ' send => rejectionHandled'); });
+        stream.on('uncaughtException', () => {Logger.trace('processDebugger', '[' + stream.pid + ']' + ' send => uncaughtException'); });
+        stream.on('unhandledRejection', () => {Logger.trace('processDebugger', '[' + stream.pid + ']' + ' send => unhandledRejection'); });
+        stream.on('warning', (warning: Error) => {Logger.trace('processDebugger', '[' + stream.pid + ']' + ' send => warning' , warning); });
+        stream.on('message', () => {Logger.trace('processDebugger', '[' + stream.pid + ']' + ' send => message'); });
+        stream.on('removeListener', (type: string) => {Logger.trace('processDebugger', '[' + stream.pid + ']' + ' send => removeListener' , {type}); });
+        stream.on('multipleResolves', () => {Logger.trace('processDebugger', '[' + stream.pid + ']' + ' send => multipleResolves '); });
         stream.on('exit', (code: number | null, signal: NodeJS.Signals | null) => {
             if (code !== 0 ) {
-                console.error('[' + stream.pid + ']' + ' send => exit:' + code + ' by signal ' + signal);
+                Logger.error('processDebugger', '[' + stream.pid + ']' + ' send => exit:' + code, {signal: signal} );
             } else {
-                console.info('[' + stream.pid + ']' + ' send => exit:' + code + ' by signal ' + signal);
+                Logger.trace('processDebugger', '[' + stream.pid + ']' + ' send => exit:' + code, {signal: signal} );
             }
         });
 
-        stream.on('SIGHUP', (...args: any[]) => {console.log('[' + stream.pid + ']' + ' send => SIGHUP. args:' + args); });
-        stream.on('SIGINT', (...args: any[]) => {console.log('[' + stream.pid + ']' + ' send => SIGINT. args:' + args); });
-        stream.on('SIGQUIT', (...args: any[]) => {console.log('[' + stream.pid + ']' + ' send => SIGQUIT. args:' + args); });
-        stream.on('SIGTERM', (...args: any[]) => {console.log('[' + stream.pid + ']' + ' send => SIGTERM. args:' + args); });
+        stream.on('SIGHUP', (...args: any[]) => {Logger.trace('processDebugger', '[' + stream.pid + ']' + ' send => SIGHUP. args:' + args); });
+        stream.on('SIGINT', (...args: any[]) => {Logger.trace('processDebugger', '[' + stream.pid + ']' + ' send => SIGINT. args:' + args); });
+        stream.on('SIGQUIT', (...args: any[]) => {Logger.trace('processDebugger', '[' + stream.pid + ']' + ' send => SIGQUIT. args:' + args); });
+        stream.on('SIGTERM', (...args: any[]) => {Logger.trace('processDebugger', '[' + stream.pid + ']' + ' send => SIGTERM. args:' + args); });
 
     }
 
-    // stream.on('SIGABRT', (...args: any[]) => {console.log('[' + stream.pid + ']' + ' send => SIGABRT. args:' + args); });
-    // stream.on('SIGALRM', (...args: any[]) => {console.log('[' + stream.pid + ']' + ' send => SIGALRM. args:' + args); });
-    // stream.on('SIGBUS', (...args: any[]) => {console.log('[' + stream.pid + ']' + ' send => SIGBUS. args:' + args); });
-    // stream.on('SIGCHLD', (...args: any[]) => {console.log('[' + stream.pid + ']' + ' send => SIGCHLD. args:' + args); });
-    // stream.on('SIGCONT', (...args: any[]) => {console.log('[' + stream.pid + ']' + ' send => SIGCONT. args:' + args); });
-    // stream.on('SIGFPE', (...args: any[]) => {console.log('[' + stream.pid + ']' + ' send => SIGFPE. args:' + args); });
-    // stream.on('SIGILL', (...args: any[]) => {console.log('[' + stream.pid + ']' + ' send => SIGILL. args:' + args); });
-    // stream.on('SIGIO', (...args: any[]) => {console.log('[' + stream.pid + ']' + ' send => SIGIO. args:' + args); });
-    // stream.on('SIGIOT', (...args: any[]) => {console.log('[' + stream.pid + ']' + ' send => SIGIOT. args:' + args); });
-    // stream.on('SIGPIPE', (...args: any[]) => {console.log('[' + stream.pid + ']' + ' send => SIGPIPE. args:' + args); });
-    // stream.on('SIGPOLL', (...args: any[]) => {console.log('[' + stream.pid + ']' + ' send => SIGPOLL. args:' + args); });
-    // stream.on('SIGPROF', (...args: any[]) => {console.log('[' + stream.pid + ']' + ' send => SIGPROF. args:' + args); });
-    // stream.on('SIGPWR', (...args: any[]) => {console.log('[' + stream.pid + ']' + ' send => SIGPWR. args:' + args); });
-    // stream.on('SIGSEGV', (...args: any[]) => {console.log('[' + stream.pid + ']' + ' send => SIGSEGV. args:' + args); });
-    // stream.on('SIGSTKFLT', (...args: any[]) => {console.log('[' + stream.pid + ']' + ' send => SIGSTKFLT. args:' + args); });
-    // stream.on('SIGSYS', (...args: any[]) => {console.log('[' + stream.pid + ']' + ' send => SIGSYS. args:' + args); });
-    // stream.on('SIGTRAP', (...args: any[]) => {console.log('[' + stream.pid + ']' + ' send => SIGTRAP. args:' + args); });
-    // stream.on('SIGTSTP', (...args: any[]) => {console.log('[' + stream.pid + ']' + ' send => SIGTSTP. args:' + args); });
-    // stream.on('SIGTTIN', (...args: any[]) => {console.log('[' + stream.pid + ']' + ' send => SIGTTIN. args:' + args); });
-    // stream.on('SIGTTOU', (...args: any[]) => {console.log('[' + stream.pid + ']' + ' send => SIGTTOU. args:' + args); });
-    // stream.on('SIGUNUSED', (...args: any[]) => {console.log('[' + stream.pid + ']' + ' send => SIGUNUSED. args:' + args); });
-    // stream.on('SIGURG', (...args: any[]) => {console.log('[' + stream.pid + ']' + ' send => SIGURG. args:' + args); });
-    // stream.on('SIGUSR1', (...args: any[]) => {console.log('[' + stream.pid + ']' + ' send => SIGUSR1. args:' + args); });
-    // stream.on('SIGUSR2', (...args: any[]) => {console.log('[' + stream.pid + ']' + ' send => SIGUSR2. args:' + args); });
-    // stream.on('SIGVTALRM', (...args: any[]) => {console.log('[' + stream.pid + ']' + ' send => SIGVTALRM. args:' + args); });
-    // stream.on('SIGWINCH', (...args: any[]) => {console.log('[' + stream.pid + ']' + ' send => SIGWINCH. args:' + args); });
-    // stream.on('SIGXCPU', (...args: any[]) => {console.log('[' + stream.pid + ']' + ' send => SIGXCPU. args:' + args); });
-    // stream.on('SIGXFSZ', (...args: any[]) => {console.log('[' + stream.pid + ']' + ' send => SIGXFSZ. args:' + args); });
-    // stream.on('SIGBREAK', (...args: any[]) => {console.log('[' + stream.pid + ']' + ' send => SIGBREAK. args:' + args); });
-    // stream.on('SIGLOST', (...args: any[]) => {console.log('[' + stream.pid + ']' + ' send => SIGLOST. args:' + args); });
-    // stream.on('SIGINFO', (...args: any[]) => {console.log('[' + stream.pid + ']' + ' send => SIGINFO. args:' + args); });
+    // stream.on('SIGABRT', (...args: any[]) => {Logger.trace('processDebugger', '[' + stream.pid + ']' + ' send => SIGABRT. args:' + args); });
+    // stream.on('SIGALRM', (...args: any[]) => {Logger.trace('processDebugger', '[' + stream.pid + ']' + ' send => SIGALRM. args:' + args); });
+    // stream.on('SIGBUS', (...args: any[]) => {Logger.trace('processDebugger', '[' + stream.pid + ']' + ' send => SIGBUS. args:' + args); });
+    // stream.on('SIGCHLD', (...args: any[]) => {Logger.trace('processDebugger', '[' + stream.pid + ']' + ' send => SIGCHLD. args:' + args); });
+    // stream.on('SIGCONT', (...args: any[]) => {Logger.trace('processDebugger', '[' + stream.pid + ']' + ' send => SIGCONT. args:' + args); });
+    // stream.on('SIGFPE', (...args: any[]) => {Logger.trace('processDebugger', '[' + stream.pid + ']' + ' send => SIGFPE. args:' + args); });
+    // stream.on('SIGILL', (...args: any[]) => {Logger.trace('processDebugger', '[' + stream.pid + ']' + ' send => SIGILL. args:' + args); });
+    // stream.on('SIGIO', (...args: any[]) => {Logger.trace('processDebugger', '[' + stream.pid + ']' + ' send => SIGIO. args:' + args); });
+    // stream.on('SIGIOT', (...args: any[]) => {Logger.trace('processDebugger', '[' + stream.pid + ']' + ' send => SIGIOT. args:' + args); });
+    // stream.on('SIGPIPE', (...args: any[]) => {Logger.trace('processDebugger', '[' + stream.pid + ']' + ' send => SIGPIPE. args:' + args); });
+    // stream.on('SIGPOLL', (...args: any[]) => {Logger.trace('processDebugger', '[' + stream.pid + ']' + ' send => SIGPOLL. args:' + args); });
+    // stream.on('SIGPROF', (...args: any[]) => {Logger.trace('processDebugger', '[' + stream.pid + ']' + ' send => SIGPROF. args:' + args); });
+    // stream.on('SIGPWR', (...args: any[]) => {Logger.trace('processDebugger', '[' + stream.pid + ']' + ' send => SIGPWR. args:' + args); });
+    // stream.on('SIGSEGV', (...args: any[]) => {Logger.trace('processDebugger', '[' + stream.pid + ']' + ' send => SIGSEGV. args:' + args); });
+    // stream.on('SIGSTKFLT', (...args: any[]) => {Logger.trace('processDebugger', '[' + stream.pid + ']' + ' send => SIGSTKFLT. args:' + args); });
+    // stream.on('SIGSYS', (...args: any[]) => {Logger.trace('processDebugger', '[' + stream.pid + ']' + ' send => SIGSYS. args:' + args); });
+    // stream.on('SIGTRAP', (...args: any[]) => {Logger.trace('processDebugger', '[' + stream.pid + ']' + ' send => SIGTRAP. args:' + args); });
+    // stream.on('SIGTSTP', (...args: any[]) => {Logger.trace('processDebugger', '[' + stream.pid + ']' + ' send => SIGTSTP. args:' + args); });
+    // stream.on('SIGTTIN', (...args: any[]) => {Logger.trace('processDebugger', '[' + stream.pid + ']' + ' send => SIGTTIN. args:' + args); });
+    // stream.on('SIGTTOU', (...args: any[]) => {Logger.trace('processDebugger', '[' + stream.pid + ']' + ' send => SIGTTOU. args:' + args); });
+    // stream.on('SIGUNUSED', (...args: any[]) => {Logger.trace('processDebugger', '[' + stream.pid + ']' + ' send => SIGUNUSED. args:' + args); });
+    // stream.on('SIGURG', (...args: any[]) => {Logger.trace('processDebugger', '[' + stream.pid + ']' + ' send => SIGURG. args:' + args); });
+    // stream.on('SIGUSR1', (...args: any[]) => {Logger.trace('processDebugger', '[' + stream.pid + ']' + ' send => SIGUSR1. args:' + args); });
+    // stream.on('SIGUSR2', (...args: any[]) => {Logger.trace('processDebugger', '[' + stream.pid + ']' + ' send => SIGUSR2. args:' + args); });
+    // stream.on('SIGVTALRM', (...args: any[]) => {Logger.trace('processDebugger', '[' + stream.pid + ']' + ' send => SIGVTALRM. args:' + args); });
+    // stream.on('SIGWINCH', (...args: any[]) => {Logger.trace('processDebugger', '[' + stream.pid + ']' + ' send => SIGWINCH. args:' + args); });
+    // stream.on('SIGXCPU', (...args: any[]) => {Logger.trace('processDebugger', '[' + stream.pid + ']' + ' send => SIGXCPU. args:' + args); });
+    // stream.on('SIGXFSZ', (...args: any[]) => {Logger.trace('processDebugger', '[' + stream.pid + ']' + ' send => SIGXFSZ. args:' + args); });
+    // stream.on('SIGBREAK', (...args: any[]) => {Logger.trace('processDebugger', '[' + stream.pid + ']' + ' send => SIGBREAK. args:' + args); });
+    // stream.on('SIGLOST', (...args: any[]) => {Logger.trace('processDebugger', '[' + stream.pid + ']' + ' send => SIGLOST. args:' + args); });
+    // stream.on('SIGINFO', (...args: any[]) => {Logger.trace('processDebugger', '[' + stream.pid + ']' + ' send => SIGINFO. args:' + args); });
     //
-    // stream.stdout.on('close', () => { console.log('[' + stream.pid + ']' + ' send => close'); });
-    // stream.stdout.on('data', (chunk: any) => { console.log('[' + stream.pid + ']' + ' send => data ' + chunk); });
-    // stream.stdout.on('end', () => { console.log('[' + stream.pid + ']' + ' send => end'); });
-    // stream.stdout.on('error', (err: Error) => { console.log('[' + stream.pid + ']' + ' send => error. ' + err); });
-    // stream.stdout.on('pause', () => { console.log('[' + stream.pid + ']' + ' send => pause'); });
-    // stream.stdout.on('readable', () => { console.log('[' + stream.pid + ']' + ' send => readable'); });
-    // stream.stdout.on('resume', () => { console.log('[' + stream.pid + ']' + ' send => resume'); });
+    // stream.stdout.on('close', () => { Logger.trace('processDebugger', '[' + stream.pid + ']' + ' send => close'); });
+    // stream.stdout.on('data', (chunk: any) => { Logger.trace('processDebugger', '[' + stream.pid + ']' + ' send => data ' + chunk); });
+    // stream.stdout.on('end', () => { Logger.trace('processDebugger', '[' + stream.pid + ']' + ' send => end'); });
+    // stream.stdout.on('error', (err: Error) => { Logger.trace('processDebugger', '[' + stream.pid + ']' + ' send => error. ' + err); });
+    // stream.stdout.on('pause', () => { Logger.trace('processDebugger', '[' + stream.pid + ']' + ' send => pause'); });
+    // stream.stdout.on('readable', () => { Logger.trace('processDebugger', '[' + stream.pid + ']' + ' send => readable'); });
+    // stream.stdout.on('resume', () => { Logger.trace('processDebugger', '[' + stream.pid + ']' + ' send => resume'); });
 }
 
 export function loadEnvVariablesFromFile(): void {
