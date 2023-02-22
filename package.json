@@ -8,7 +8,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "yargs": "^17.6.2",
+    "yargs": "^17.7.0",
     "cli-color": "^2.0.3",
     "debug": "^4.3.4"
   },
