@@ -28,16 +28,16 @@ export default class ProcessLocker {
             if (fs.existsSync(this.options.fsDirPath + '/' + resource + '.lock')) {
                 fs.unlink(this.options.fsDirPath + '/' + resource + '.lock', function(err) {
                     if (err) {
-                        process.stderr.write('[realise-locker] ERROR: Can not remove lock file: ' + this.options.fsDirPath + '/' + resource + '.lock' + '\n');
+                        process.stderr.write('[release-locker] ERROR: Can not remove lock file: ' + this.options.fsDirPath + '/' + resource + '.lock' + '\n');
                         resolve(true);
                     } else {
-                        process.stdout.write('[realise-locker] INFO: Successfully unlock: ' + this.options.fsDirPath + '/' + resource + '.lock' + '\n');
+                        process.stdout.write('[release-locker] INFO: Successfully unlock: ' + this.options.fsDirPath + '/' + resource + '.lock' + '\n');
                         resolve(true);
                     }
                 }.bind(this));
             } else {
                 if (ConfigFactory.getCore().HELM_ASSISTANT_DEBUG_LEVEL >= 1) {
-                    process.stderr.write('[realise-locker] DEBUG: lock file not found' + '\n');
+                    process.stderr.write('[release-locker] DEBUG: lock file not found' + '\n');
                 }
                 resolve(true);
             }
@@ -51,7 +51,7 @@ export default class ProcessLocker {
 
     private async waitAvailability(key:string): Promise<boolean> {
         return new Promise<boolean>((resolve, reject) => {
-            process.stdout.write('[realise-locker] NOTICE: Waiting for lock on: ' + this.options.fsDirPath + '/' + key + '.lock' + '\n');
+            process.stdout.write('[release-locker] NOTICE: Waiting for lock on: ' + this.options.fsDirPath + '/' + key + '.lock' + '\n');
             this.timer = setInterval(() => {
                 (async () => {
                     const content = this.getLockData(key);
@@ -63,7 +63,7 @@ export default class ProcessLocker {
                     }
                     const data = new Date(content.toString());
                     if (data < new Date()) {
-                        process.stdout.write('[realise-locker] WARNING: Lock file exist but he is expired: ' + this.options.fsDirPath + '/' + key + '.lock' + '\n');
+                        process.stdout.write('[release-locker] WARNING: Lock file exist but he is expired: ' + this.options.fsDirPath + '/' + key + '.lock' + '\n');
                         const result = await this.putLockData(key);
                         clearInterval(this.timer);
                         resolve(result);
@@ -87,10 +87,10 @@ export default class ProcessLocker {
         return new Promise(function(resolve, reject) {
             fs.writeFile(this.options.fsDirPath + '/' + key + '.lock', date.toString(), 'utf8', function(err) {
                 if (err) {
-                    process.stderr.write('\n' + '[realise-locker] ERROR: Can not create lock file: ' + JSON.stringify(err) + '\n');
+                    process.stderr.write('\n' + '[release-locker] ERROR: Can not create lock file: ' + JSON.stringify(err) + '\n');
                     reject(false);
                 } else {
-                    process.stdout.write('\n' + '[realise-locker] INFO: Successfully acquired lock on: ' + this.options.fsDirPath + '/' + key + '.lock' + '\n');
+                    process.stdout.write('\n' + '[release-locker] INFO: Successfully acquired lock on: ' + this.options.fsDirPath + '/' + key + '.lock' + '\n');
                     resolve(true);
                 }
             }.bind(this));
