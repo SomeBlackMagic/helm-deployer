@@ -7,7 +7,6 @@ import {VersionModule} from './Modules/VersionModule';
 import * as console from 'console';
 import {hideBin} from 'yargs/helpers';
 import * as yargs from 'yargs';
-import Logger from './Components/Logger';
 
 loadEnvVariablesFromFile();
 

@@ -12,7 +12,7 @@ const cliColor = require('cli-color');
 export class UpgradeModule {
     private isExit: boolean = false;
     private subProcesses: { [n: string]: ChildProcessWithoutNullStreams } = {};
-    private realiseName: string = '';
+    private releaseName: string = '';
     private namespace: string = '';
     private timeouts: NodeJS.Timeout[] = [];
     private intervals: any[] = [];
@@ -33,10 +33,10 @@ export class UpgradeModule {
         //         }
         //     }, 500);
         // }
-        this.realiseName = cliArgs._[1];
+        this.releaseName = cliArgs._[1];
         this.namespace = cliArgs.namespace;
-        if (ConfigFactory.getCore().HELM_ASSISTANT_REALISE_LOCK_ENABLED === true) {
-            await this.lockComponent.getLock(this.namespace + '-' + this.realiseName);
+        if (ConfigFactory.getCore().HELM_ASSISTANT_RELEASE_LOCK_ENABLED === true) {
+            await this.lockComponent.getLock(this.namespace + '-' + this.releaseName);
         }
 
         if (ConfigFactory.getCore().HELM_ASSISTANT_UPGRADE_PIPE_LOGS === true) {
@@ -57,7 +57,7 @@ export class UpgradeModule {
         this.intervals.forEach((item) => {
             clearInterval(item);
         });
-        await this.lockComponent.clearLock(this.namespace + '-' + this.realiseName);
+        await this.lockComponent.clearLock(this.namespace + '-' + this.releaseName);
 
         Logger.trace('UpgradeModule:stop', 'Stop all subprocess', {count: Object.entries(this.subProcesses).length});
         let promises = Object.entries(this.subProcesses).map((entry) => {
@@ -93,7 +93,7 @@ export class UpgradeModule {
             'get', 'pods',
             '--watch',
             '--namespace', ConfigFactory.getCore().KUBE_NAMESPACE,
-            '--selector', 'app.kubernetes.io/instance=' + this.realiseName
+            '--selector', 'app.kubernetes.io/instance=' + this.releaseName
         ];
         await this.createChildProcess(ConfigFactory.getCore().KUBECTL_BIN_PATH, args, false, false, true, 'pods', 'magenta');
 
@@ -106,7 +106,7 @@ export class UpgradeModule {
                     ...ConfigFactory.getCore().KUBECTL_CMD_ARGS.split(' '),
                     'get', 'pods',
                     '--namespace', ConfigFactory.getCore().KUBE_NAMESPACE,
-                    '--selector', 'app.kubernetes.io/instance=' + this.realiseName,
+                    '--selector', 'app.kubernetes.io/instance=' + this.releaseName,
                     '-o', 'json'
                 ];
                 const pods = await this.createChildProcess(ConfigFactory.getCore().KUBECTL_BIN_PATH, newProcessArgs, true, true);
@@ -167,7 +167,7 @@ export class UpgradeModule {
             [
                 ...ConfigFactory.getCore().KUBECTL_CMD_ARGS.split(' '),
                 'get', 'job',
-                this.realiseName,
+                this.releaseName,
                 '-o', 'json',
                 '--namespace', ConfigFactory.getCore().KUBE_NAMESPACE,
             ];

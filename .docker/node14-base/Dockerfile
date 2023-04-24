@@ -73,6 +73,23 @@ RUN apk update && \
     apk upgrade && \
     apk add bash
 
+###
+### Envs
+###
+ENV MY_USER="app" \
+    MY_GROUP="app" \
+    MY_UID="1000" \
+    MY_GID="1000"
+
+####
+#### User/Group
+####
+RUN set -eux \
+    && addgroup -g ${MY_GID} ${MY_GROUP} \
+    && adduser -u ${MY_UID} -G ${MY_GROUP} -s /bin/bash -D ${MY_USER} \
+    && true
+
+
 # Must set this value for the bash shell to source
 # the '/etc/bashrc' file.
 # See: https://stackoverflow.com/q/29021704

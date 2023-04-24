@@ -13,9 +13,9 @@ export default class ProcessLocker {
 
     public constructor() {
         this.options = {
-            maxRetries: ConfigFactory.getCore().HELM_ASSISTANT_REALISE_LOCK_MAX_RETRIES,
-            driver: ConfigFactory.getCore().HELM_ASSISTANT_REALISE_LOCK_DRIVER,
-            fsDirPath: ConfigFactory.getCore().HELM_ASSISTANT_REALISE_LOCK_FS_DIR_PATH
+            maxRetries: ConfigFactory.getCore().HELM_ASSISTANT_RELEASE_LOCK_MAX_RETRIES,
+            driver: ConfigFactory.getCore().HELM_ASSISTANT_RELEASE_LOCK_DRIVER,
+            fsDirPath: ConfigFactory.getCore().HELM_ASSISTANT_RELEASE_LOCK_FS_DIR_PATH
         };
     }
     public async getLock(resource: string): Promise<boolean> {
@@ -36,7 +36,9 @@ export default class ProcessLocker {
                     }
                 }.bind(this));
             } else {
-                process.stderr.write('[realise-locker] DEBUG: lock file not found' + '\n');
+                if (ConfigFactory.getCore().HELM_ASSISTANT_DEBUG_LEVEL >= 1) {
+                    process.stderr.write('[realise-locker] DEBUG: lock file not found' + '\n');
+                }
                 resolve(true);
             }
         }.bind(this));
