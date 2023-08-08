@@ -37,9 +37,9 @@ export class SubProcessTracer {
     public watch(stream) {
         this.processList[stream.pid] = stream;
         if ('spawnargs' in stream) {
-            this.logger.info('Spawn new process: [' + stream.pid + '] ' + stream.spawnargs.join(' '));
+            this.logger.trace('Spawn new process: [' + stream.pid + '] ' + stream.spawnargs.join(' '));
         } else {
-            this.logger.info('Spawn new process: [' + stream.pid + '] ' + stream.argv.join(' '));
+            this.logger.trace('Spawn new process: [' + stream.pid + '] ' + stream.argv.join(' '));
         }
 
         stream.on('beforeExit', () => {this.logger.trace( '[' + stream.pid + ']' + ' send => beforeExit'); });

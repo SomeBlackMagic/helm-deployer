@@ -1,3 +1,8 @@
+import {ConfigFactory} from '../Config/app-config';
+import * as console from 'console';
+import * as process from 'process';
+import {inArray} from '../Helpers';
+
 export default class Logger {
     private static instance: Logger;
     private readonly category: string;
@@ -73,13 +78,46 @@ export default class Logger {
     }
 
     private log(level:string, text: string, someData: object) {
-        const logDebugger  = require('debug');
-        logDebugger.color = 'w';
-        const log2 = logDebugger(this.category + ':' + level);
+        switch (ConfigFactory.getCore().LOGGER_DRIVER) {
+            case 'console':
+                this.logWithConsole(level, text, someData);
+                break;
+            case 'debug':
+                this.logWithDebug(level, text, someData);
+                break;
+            default:
+                console.error('Logger configuration filed. Unknown driver:' + ConfigFactory.getCore().LOGGER_DRIVER);
+                return;
+        }
+    }
+    private logWithDebug(level:string, text: string, someData: object) {
+        const log2 = require('debug')('[' + ConfigFactory.getBase().id + '][' + this.category + '][' + level + ']');
+        // log2.color = 'w';
+        // const log2 = logDebugger();
         if (Object.entries(someData).length !== 0) {
-            log2(text + ' ' + JSON.stringify(someData));
+            log2( text + ' ' + JSON.stringify(someData));
         } else {
             log2(text);
         }
+    }
+
+    private logWithConsole(level:string, text: string, someData: object) {
+        if (level === 'trace') {
+            return;
+        }
+
+        let outputer;
+        if (inArray(['fatal', 'error'], level)) {
+            outputer = console.error;
+        } else {
+            outputer = console.info;
+        }
+        if (Object.entries(someData).length !== 0) {
+            outputer('[' + ConfigFactory.getBase().id + '][' + this.category + '][' + level + '] ' + text + ' ' + JSON.stringify(someData));
+        } else {
+            outputer('[' + ConfigFactory.getBase().id + '][' + this.category + '][' + level + '] ' + text);
+        }
+
+
     }
 }

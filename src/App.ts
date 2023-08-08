@@ -19,16 +19,16 @@ processHelper.setExitHandler((data: { code: string }) => {
     process.emit('message', '', '');
     (async () => {
         if (!inArray(['exit'], data.code)) {
-            console.log('PCNTL signal received ', [data.code]);
+            console.log('[helm-assistant] PCNTL signal received ', [data.code]);
         }
-        console.log('Graceful stop all modules');
+        console.log('[helm-assistant] Graceful stop all modules');
         await Promise.all([upgradeModule, helmProxyModule].map((item: any) => {
             return item.stop();
         })).catch((error) => {
-            console.log('Can not stop services', error);
+            console.log('[helm-assistant] Can not stop services', error);
             process.exitCode = 1;
         });
-        console.log('System gracefully stopped');
+        console.log('[helm-assistant] System gracefully stopped');
     })();
 });
 processHelper.subscribeOnProcessExit();
@@ -64,7 +64,6 @@ processHelper.subscribeOnProcessExit();
         .option('verify', {type: 'boolean'})
         .option('version', {type: 'string'})
         .parse();
-
 
     const mode: string = argv._[0];
     switch (mode) {

@@ -57,9 +57,9 @@ export function envBoolean(key: string, defaultValue: boolean): boolean {
 export function processSignalDebug(name: string, stream: ChildProcessWithoutNullStreams | NodeJS.Process) {
     if (ConfigFactory.getCore().HELM_ASSISTANT_DEBUG === true) {
         if ('spawnargs' in stream) {
-            Logger.info('processDebugger', 'Spawn new process: [' + stream.pid + ']' + name + ' ' + stream.spawnargs.join(' '));
+            Logger.trace('processDebugger', 'Spawn new process: [' + stream.pid + ']' + name + ' ' + stream.spawnargs.join(' '));
         } else {
-            Logger.info('processDebugger', 'Spawn new process: [' + stream.pid + ']' + name + ' ' + stream.argv.join(' '));
+            Logger.trace('processDebugger', 'Spawn new process: [' + stream.pid + ']' + name + ' ' + stream.argv.join(' '));
         }
 
         stream.on('beforeExit', () => {Logger.trace('processDebugger', '[' + stream.pid + ']' + ' send => beforeExit'); });
@@ -148,7 +148,7 @@ export function loadEnvVariablesFromFile(): void {
 function loadEnvFile(path: string): boolean | DotenvParseOutput {
     try {
         fs.accessSync(path, fs.constants.R_OK);
-        console.log('Load env vars from file: ' + path);
+        console.log('[helm-assistant] Load env vars from file: ' + path);
         const dotEnv = config({path: path, override: true, debug: process.env.DEBUG === '*'});
 
         if (dotEnv.error !== undefined) {

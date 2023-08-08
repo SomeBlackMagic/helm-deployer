@@ -14,6 +14,7 @@ export class ConfigFactory {
 
     public static getCore(): CoreConfigInterface {
         return {
+            LOGGER_DRIVER: env('HELM_ASSISTANT_LOGGER_DRIVER', 'console'),
             HELM_ASSISTANT_RELEASE_LOCK_DRIVER: '',
             HELM_BIN_PATH:  env('HELM_BIN_PATH', 'helm'),
             HELM_CMD_ARGS: env('HELM_CMD_ARGS', ''),
@@ -41,6 +42,7 @@ interface AppInfo {
 }
 
 interface CoreConfigInterface {
+    LOGGER_DRIVER: string;
     HELM_BIN_PATH: string;
     HELM_CMD_ARGS: string;
     KUBECTL_BIN_PATH: string;

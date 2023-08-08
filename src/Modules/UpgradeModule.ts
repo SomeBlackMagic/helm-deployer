@@ -35,11 +35,13 @@ export class UpgradeModule {
         // }
         this.releaseName = cliArgs._[1];
         this.namespace = cliArgs.namespace;
+
         if (ConfigFactory.getCore().HELM_ASSISTANT_RELEASE_LOCK_ENABLED === true) {
             await this.lockComponent.getLock(this.namespace + '-' + this.releaseName);
         }
 
         if (ConfigFactory.getCore().HELM_ASSISTANT_UPGRADE_PIPE_LOGS === true) {
+            Logger.info('UpgradeModule', 'Start watch new pods, logs and event', {namespace: this.namespace, releaseName: this.releaseName});
             this.kubectlWatchPodsLogsAndEvents();
             await this.kubectlWatchPods();
         }
@@ -112,7 +114,7 @@ export class UpgradeModule {
                 const pods = await this.createChildProcess(ConfigFactory.getCore().KUBECTL_BIN_PATH, newProcessArgs, true, true);
                 let podList: any = JSON.parse(pods);
                 if (podList.items === undefined) {
-                    console.log('[helm-assistant]  WARNING: empty pod list on kubectl get pods');
+                    Logger.warn('UpgradeModule', 'Empty pod list on kubectl get pods');
                     return;
                 }
                 podList.items.forEach((podItem: any) => {
@@ -163,6 +165,7 @@ export class UpgradeModule {
     }
 
     private async watchJobStatus() {
+        Logger.info('UpgradeModule:watchJobStatus', 'Start watch for jobs status', {namespace: this.namespace, releaseName: this.releaseName});
         const newProcessArgs: string[] =
             [
                 ...ConfigFactory.getCore().KUBECTL_CMD_ARGS.split(' '),
@@ -181,11 +184,13 @@ export class UpgradeModule {
                 if (typeof resultJson?.status?.conditions !== 'undefined') {
                     resultJson.status.conditions.forEach((item: any) => {
                         if (item.type === 'Failed') {
-                            console.log('Job is failed. Exit!');
+                            Logger.info('UpgradeModule:watchJobStatus', 'Job is failed. Exit!', {});
                             process.exitCode = 1;
                             process.emit('SIGTERM');
                         }
                     });
+                } else {
+                    Logger.info('UpgradeModule:watchJobStatus', 'Job not found in release. Wait for job');
                 }
             })();
         }, 1000));

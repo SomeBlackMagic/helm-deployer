@@ -1,10 +1,11 @@
 import {ConfigFactory} from '../Config/app-config';
+import Logger from '../Components/Logger';
 
 const cliColor = require('cli-color');
 
 export class VersionModule {
     public async run(cliArgs: any): Promise<any> {
-        console.log(ConfigFactory.getBase().id + ': ' + ConfigFactory.getBase().version);
+        Logger.info('VersionModule', 'Module version:', [ConfigFactory.getBase().version]);
         return Promise.resolve();
 
     }
