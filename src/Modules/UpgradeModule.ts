@@ -181,17 +181,23 @@ export class UpgradeModule {
                     return;
                 }
                 const resultJson = JSON.parse(result);
-                if (typeof resultJson?.status?.conditions !== 'undefined') {
-                    resultJson.status.conditions.forEach((item: any) => {
-                        if (item.type === 'Failed') {
-                            Logger.info('UpgradeModule:watchJobStatus', 'Job is failed. Exit!', {});
-                            process.exitCode = 1;
-                            process.emit('SIGTERM');
-                        }
-                    });
-                } else {
-                    Logger.info('UpgradeModule:watchJobStatus', 'Job not found in release object. Wait for job');
+                if (resultJson.items.length === 0) {
+                    Logger.info('UpgradeModule:watchJobStatus', 'Jobs not found in release. Wait for job');
+                    return;
                 }
+                resultJson.items.forEach((jobItem: any) => {
+                    if (typeof jobItem?.status?.conditions !== 'undefined') {
+                        resultJson.status.conditions.forEach((item: any) => {
+                            if (item.type === 'Failed') {
+                                Logger.info('UpgradeModule:watchJobStatus', 'Job is failed. Exit!', {});
+                                process.exitCode = 1;
+                                process.emit('SIGTERM');
+                            }
+                        });
+                    } else {
+                        Logger.info('UpgradeModule:watchJobStatus', 'Job not found in release object. Wait for job');
+                    }
+                });
             })();
         }, 1000));
     }
