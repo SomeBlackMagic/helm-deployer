@@ -55,7 +55,7 @@ export class SubProcessTracer {
             delete this.processList[stream.pid];
 
             if (code !== 0 ) {
-                this.logger.error('[' + stream.pid + ']' + ' send => exit:' + code, {signal: signal} );
+                this.logger.debug('[' + stream.pid + ']' + ' send => exit:' + code, {signal: signal} );
             } else {
                 this.logger.trace('[' + stream.pid + ']' + ' send => exit:' + code, {signal: signal} );
             }

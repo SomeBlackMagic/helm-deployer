@@ -1,5 +1,4 @@
 import {ChildProcessWithoutNullStreams, spawn} from 'child_process';
-import {inArray, processSignalDebug} from '../Helpers';
 import {ConfigFactory} from '../Config/app-config';
 import {clearTimeout} from 'timers';
 import ProcessLocker from '../Components/ProcessLocker';
@@ -170,14 +169,15 @@ export class UpgradeModule {
             [
                 ...ConfigFactory.getCore().KUBECTL_CMD_ARGS.split(' '),
                 'get', 'job',
-                this.releaseName,
-                '-o', 'json',
+                '--selector', 'app.kubernetes.io/instance=' + this.releaseName,
                 '--namespace', ConfigFactory.getCore().KUBE_NAMESPACE,
+                '-o', 'json',
             ];
         this.intervals.push(setInterval(() => {
             (async () => {
                 const result = await this.createChildProcess(ConfigFactory.getCore().KUBECTL_BIN_PATH, newProcessArgs, true, true);
                 if (result === '') {
+                    Logger.info('UpgradeModule:watchJobStatus', 'Job not found in release. Wait for job');
                     return;
                 }
                 const resultJson = JSON.parse(result);
@@ -190,7 +190,7 @@ export class UpgradeModule {
                         }
                     });
                 } else {
-                    Logger.info('UpgradeModule:watchJobStatus', 'Job not found in release. Wait for job');
+                    Logger.info('UpgradeModule:watchJobStatus', 'Job not found in release object. Wait for job');
                 }
             })();
         }, 1000));
