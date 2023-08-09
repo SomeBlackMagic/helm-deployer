@@ -7,6 +7,7 @@ import {VersionModule} from './Modules/VersionModule';
 import * as console from 'console';
 import {hideBin} from 'yargs/helpers';
 import * as yargs from 'yargs';
+import * as process from 'process';
 
 loadEnvVariablesFromFile();
 
@@ -26,7 +27,7 @@ processHelper.setExitHandler((data: { code: string }) => {
             return item.stop();
         })).catch((error) => {
             console.log('[helm-assistant] Can not stop services', error);
-            process.exitCode = 1;
+            // process.exitCode = 1;
         });
         console.log('[helm-assistant] System gracefully stopped');
     })();

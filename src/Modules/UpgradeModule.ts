@@ -9,6 +9,7 @@ import {SubProcessTracer} from '../Components/SubProcessTracer';
 const cliColor = require('cli-color');
 
 export class UpgradeModule {
+    private isWork: boolean = false; // for detect is module active on stop application
     private isExit: boolean = false;
     private subProcesses: { [n: string]: ChildProcessWithoutNullStreams } = {};
     private releaseName: string = '';
@@ -18,6 +19,7 @@ export class UpgradeModule {
     private lockComponent: ProcessLocker = new ProcessLocker();
 
     public async run(cliArgs: any): Promise<any> {
+        this.isWork = true;
         // if (ConfigFactory.getCore().HELM_ASSISTANT_DEBUG === true && ConfigFactory.getCore().HELM_ASSISTANT_DEBUG_LEVEL >= 3) {
         //     const tracer = setInterval(() => {
         //         // this.subProcesses
@@ -33,7 +35,13 @@ export class UpgradeModule {
         //     }, 500);
         // }
         this.releaseName = cliArgs._[1];
-        this.namespace = cliArgs.namespace;
+        if (typeof cliArgs.namespace !== 'undefined') {
+            this.namespace = cliArgs.namespace;
+        } else if (typeof cliArgs.n !== 'undefined') {
+            this.namespace = cliArgs.n;
+        } else {
+            this.namespace = 'default';
+        }
 
         if (ConfigFactory.getCore().HELM_ASSISTANT_RELEASE_LOCK_ENABLED === true) {
             await this.lockComponent.getLock(this.namespace + '-' + this.releaseName);
@@ -47,10 +55,12 @@ export class UpgradeModule {
         if (ConfigFactory.getCore().HELM_ASSISTANT_UPGRADE_JOB_STRICT === true && cliArgs?.waitForJobs === true) {
             await this.watchJobStatus();
         }
-
     }
 
     public async stop(): Promise<any> {
+        if (this.isWork === false) {
+            return Promise.resolve();
+        }
         this.isExit = true;
         this.timeouts.forEach((item) => {
             clearTimeout(item);
@@ -93,7 +103,7 @@ export class UpgradeModule {
             ...ConfigFactory.getCore().KUBECTL_CMD_ARGS.split(' '),
             'get', 'pods',
             '--watch',
-            '--namespace', ConfigFactory.getCore().KUBE_NAMESPACE,
+            '--namespace', this.namespace,
             '--selector', 'app.kubernetes.io/instance=' + this.releaseName
         ];
         await this.createChildProcess(ConfigFactory.getCore().KUBECTL_BIN_PATH, args, false, false, true, 'pods', 'magenta');
@@ -106,12 +116,19 @@ export class UpgradeModule {
                 let newProcessArgs: string[] = [
                     ...ConfigFactory.getCore().KUBECTL_CMD_ARGS.split(' '),
                     'get', 'pods',
-                    '--namespace', ConfigFactory.getCore().KUBE_NAMESPACE,
+                    '--namespace', this.namespace,
                     '--selector', 'app.kubernetes.io/instance=' + this.releaseName,
                     '-o', 'json'
                 ];
                 const pods = await this.createChildProcess(ConfigFactory.getCore().KUBECTL_BIN_PATH, newProcessArgs, true, true);
-                let podList: any = JSON.parse(pods);
+                let podList: any = {};
+                try {
+                    podList = JSON.parse(pods);
+                } catch (e) {
+                    Logger.fatal('UpgradeModule', 'Can not parse JSON output.', pods);
+                    return;
+                }
+
                 if (podList.items === undefined) {
                     Logger.warn('UpgradeModule', 'Empty pod list on kubectl get pods');
                     return;
@@ -144,7 +161,7 @@ export class UpgradeModule {
                 'get', 'events',
                 '--watch-only',
                 '--field-selector', 'involvedObject.name=' + podName,
-                '--namespace', ConfigFactory.getCore().KUBE_NAMESPACE,
+                '--namespace', this.namespace,
             ];
         await this.createChildProcess(ConfigFactory.getCore().KUBECTL_BIN_PATH, newProcessArgs, false, false, true, 'pod ' + podName + ' events', 'yellow');
     }
@@ -156,7 +173,7 @@ export class UpgradeModule {
                 'logs',
                 '--follow',
                 '--tail', ConfigFactory.getCore().HELM_ASSISTANT_UPGRADE_PIPE_LOGS_TAIL_LINES.toString(),
-                '--namespace', ConfigFactory.getCore().KUBE_NAMESPACE,
+                '--namespace', this.namespace,
                 '--container', containerName,
                 podName
             ];
@@ -170,7 +187,7 @@ export class UpgradeModule {
                 ...ConfigFactory.getCore().KUBECTL_CMD_ARGS.split(' '),
                 'get', 'job',
                 '--selector', 'app.kubernetes.io/instance=' + this.releaseName,
-                '--namespace', ConfigFactory.getCore().KUBE_NAMESPACE,
+                '--namespace', this.namespace,
                 '-o', 'json',
             ];
         this.intervals.push(setInterval(() => {
@@ -180,7 +197,19 @@ export class UpgradeModule {
                     Logger.info('UpgradeModule:watchJobStatus', 'Job not found in release. Wait for job');
                     return;
                 }
-                const resultJson = JSON.parse(result);
+
+                let resultJson:any = {};
+                try {
+                    resultJson = JSON.parse(result);
+                } catch (e) {
+                    Logger.fatal('UpgradeModule', 'Can not parse JSON output.', result);
+                    return;
+                }
+
+                if (Object.keys(resultJson).length === 0) {
+                    Logger.warn('UpgradeModule:watchJobStatus', 'Empty result from kube api');
+                    return;
+                }
                 if (resultJson.items.length === 0) {
                     Logger.info('UpgradeModule:watchJobStatus', 'Jobs not found in release. Wait for job');
                     return;
@@ -195,7 +224,7 @@ export class UpgradeModule {
                             }
                         });
                     } else {
-                        Logger.info('UpgradeModule:watchJobStatus', 'Job not found in release object. Wait for job');
+                        Logger.trace('UpgradeModule:watchJobStatus', 'Conditions not found in Job');
                     }
                 });
             })();

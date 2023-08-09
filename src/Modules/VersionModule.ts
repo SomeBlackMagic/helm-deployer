@@ -5,7 +5,7 @@ const cliColor = require('cli-color');
 
 export class VersionModule {
     public async run(cliArgs: any): Promise<any> {
-        Logger.info('VersionModule', 'Module version:', [ConfigFactory.getBase().version]);
+        Logger.info('VersionModule', 'Installed version:', [ConfigFactory.getBase().version]);
         return Promise.resolve();
 
     }

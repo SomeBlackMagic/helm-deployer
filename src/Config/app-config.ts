@@ -22,7 +22,6 @@ export class ConfigFactory {
             KUBECTL_CMD_ARGS: env('KUBECTL_CMD_ARGS', ''),
             HELM_DEBUG: envBoolean('HELM_DEBUG', false),
             HELM_DRY_RUN:  envBoolean('HELM_DRY_RUN', false),
-            KUBE_NAMESPACE:  env('KUBE_NAMESPACE', 'default'),
             HELM_ASSISTANT_DEBUG: envBoolean('HELM_ASSISTANT_DEBUG', false),
             HELM_ASSISTANT_DEBUG_LEVEL: envNumber('HELM_ASSISTANT_DEBUG_LEVEL', 0, 0),
             HELM_ASSISTANT_UPGRADE_PIPE_LOGS: envBoolean('HELM_ASSISTANT_UPGRADE_PIPE_LOGS', false),
@@ -49,7 +48,6 @@ interface CoreConfigInterface {
     KUBECTL_CMD_ARGS: string;
     HELM_DEBUG: boolean;
     HELM_DRY_RUN: boolean;
-    KUBE_NAMESPACE: string;
     HELM_ASSISTANT_DEBUG: boolean;
     HELM_ASSISTANT_DEBUG_LEVEL: number;
     HELM_ASSISTANT_UPGRADE_PIPE_LOGS: boolean;

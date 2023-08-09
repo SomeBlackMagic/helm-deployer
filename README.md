@@ -10,7 +10,7 @@ Also implement upgrade locker. When using multiple deploy with the same non-conc
 
 When you run helm-assistant upgrade <some arguments> application run new sub process ```helm upgrade <some arguments>```, pipe logs 
 and also run kubectl process for grab additional data about deployment.
-Also if you run deployment with flag --wait-for-jobs application check deployed job, and if status if `Failed` 
+Also, if you run deployment with flag --wait-for-jobs application check deployed job, and if status is `Failed` 
 application send helm signal to revert realise
 
 ## How to install
@@ -22,12 +22,7 @@ mv helm-assistant-linux-amd64 /usr/local/bin/helm-assistant
 
 ## How to use
 
-### Set base variables to correct work
-```
-export KUBE_NAMESPACE=deafult
-```
-
-Also set access credentials for helm and kubectl if needed
+### Set access credentials for helm and kubectl if needed
 ```
 export HELM_CMD_ARGS="--kubeconfig /root/.kube/some-cluster.yaml"
 export KUBECTL_CMD_ARGS="--kubeconfig /root/.kube/some-cluster.yaml"
@@ -36,6 +31,7 @@ export KUBECTL_CMD_ARGS="--kubeconfig /root/.kube/some-cluster.yaml"
 ```
 export HELM_ASSISTANT_UPGRADE_PIPE_LOGS=true
 export HELM_ASSISTANT_UPGRADE_JOB_STRICT=true
+export HELM_ASSISTANT_RELEASE_LOCK_ENABLED=true
 ```
 ### Run upgrade any chart
 ```

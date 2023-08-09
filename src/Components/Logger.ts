@@ -102,7 +102,7 @@ export default class Logger {
     }
 
     private logWithConsole(level:string, text: string, someData: object) {
-        if (level === 'trace') {
+        if (inArray(['trace', 'debug'], level)) {
             return;
         }
 
