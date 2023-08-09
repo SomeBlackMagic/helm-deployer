@@ -9,8 +9,8 @@ export class HelmProxyModule {
     public async runHelmCMD(cmd: string, cliArgs: string[]): Promise<void> {
         return new Promise<void>((resolve, reject) => {
             this.process = spawn(cmd, cliArgs.filter((item) => { return item !== ''; }), {
-                killSignal: 'SIGTERM',
-                timeout: 30000,
+                // killSignal: 'SIGTERM',
+                // timeout: 30000,
                 // detached: true,
                 // stdio: [null, 'pipe', 'pipe']
             });
