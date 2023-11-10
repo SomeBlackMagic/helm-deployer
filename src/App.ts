@@ -20,7 +20,7 @@ processHelper.setExitHandler((data: { code: string }) => {
     process.emit('message', '', '');
     (async () => {
         if (!inArray(['exit'], data.code)) {
-            console.log('[helm-assistant] PCNTL signal received ', [data.code]);
+            console.log('[helm-assistant] Stop signal received ', [data.code]);
         }
         console.log('[helm-assistant] Graceful stop all modules');
         await Promise.all([upgradeModule, helmProxyModule].map((item: any) => {

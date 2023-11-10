@@ -29,7 +29,7 @@ export class ProcessHelper {
 
 
     public uncaughtExceptionHandler(error: Error) {
-        console.error('Helm Assistant: Uncaught Exception');
+        console.error('[Helm Assistant]: Uncaught Exception');
         console.error('-----------------------------------');
         console.error(error.message, error.stack, error.name);
         console.error('-----------------------------------');

@@ -9,7 +9,9 @@ export class HelmProxyModule {
 
     public async runHelmCMD(cmd: string, cliArgs: string[]): Promise<void> {
         return new Promise<void>((resolve, reject) => {
-            let env = {};
+            let env = {
+                PATH: process.env.PATH
+            };
             if (ConfigFactory.getCore().HELM_CACHE_HOME !== '') {
                 env['HELM_CACHE_HOME'] = ConfigFactory.getCore().HELM_CACHE_HOME;
             }

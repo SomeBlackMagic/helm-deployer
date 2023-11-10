@@ -63,7 +63,7 @@ export default class ProcessLocker {
                     }
                     const data = new Date(content.toString());
                     if (data < new Date()) {
-                        process.stdout.write('[helm-assistant][release-locker] WARNING: Lock file exist but he is expired: ' + this.options.fsDirPath + '/' + key + '.lock' + '\n');
+                        process.stdout.write('[helm-assistant][release-locker] WARNING: Lock file exist it is expired: ' + this.options.fsDirPath + '/' + key + '.lock' + '\n');
                         const result = await this.putLockData(key);
                         clearInterval(this.timer);
                         resolve(result);
