@@ -9,21 +9,12 @@ export class HelmProxyModule {
 
     public async runHelmCMD(cmd: string, cliArgs: string[]): Promise<void> {
         return new Promise<void>((resolve, reject) => {
-            let env = {
-                PATH: process.env.PATH
-            };
-            if (ConfigFactory.getCore().HELM_CACHE_HOME !== '') {
-                env['HELM_CACHE_HOME'] = ConfigFactory.getCore().HELM_CACHE_HOME;
-            }
-            if (ConfigFactory.getCore().HELM_CONFIG_HOME !== '') {
-                env['HELM_CONFIG_HOME'] = ConfigFactory.getCore().HELM_CONFIG_HOME;
-            }
             this.process = spawn(cmd, cliArgs.filter((item) => { return item !== ''; }), {
                 // killSignal: 'SIGTERM',
                 // timeout: 30000,
                 // detached: true,
                 // stdio: [null, 'pipe', 'pipe']
-                env: env
+                env: process.env
             });
             this.process.stdout.on('data', (arrayBuffer) => {
                 const data = Buffer.from(arrayBuffer, 'utf-8').toString().split('\n');
